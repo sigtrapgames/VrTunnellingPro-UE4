@@ -61,7 +61,7 @@ A Mobile-friendly version is in the works and will be ready shortly. This versio
 Full documentation will be made available at [http://www.sigtrapgames.com](http://www.sigtrapgames.com). Check out our talk [Integrating Locomotion in Unity, Unreal, and Native Engines](https://www.youtube.com/watch?v=dBs65za8fhM) from Oculus Connect 5.
 
 ## Credits
-Developed and maintained by Darby Costello ([@darbycostello](https://twitter.com/darbycostello))  
+Developed and maintained by Darby Costello ([@darbycostello](https://twitter.com/darbycostello) | [github](https://github.com/darbycostello))  
 Ported from [Unity version](https://github.com/sigtrapgames/VrTunnellingPro-Unity) originally developed by Dr Luke Thompson ([@six_ways](https://twitter.com/six_ways) | [github](https://github.com/SixWays))   
 Research and support by Tom Heath on behalf of Oculus  
 Art assets by Gary Lloyd ([@garylloyd89](https://twitter.com/garylloyd89))
