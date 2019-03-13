@@ -1,10 +1,12 @@
 VR Tunnelling Pro (VRTP) is the most advanced VR comfort solution for Unreal Engine 4.20+. It can be dropped in to almost any project for plug-and-play comfort options. It's developed by Sigtrap with support from Oculus, and currently supports Oculus Rift.
 
+*VRTP is currently in beta for UE4.*
+
 VRTP is designed not only as a plugin, but a platform for experimenting with and developing new comfort techniques. Familiarity with the source will allow developers to quickly implement new techniques.
 
 ## Quick Installation & Usage
 To use the plugin within your project:
-* Go to Releases to download the plugin for your Unreal Engine version
+* Go to [Releases](https://github.com/sigtrapgames/VrTunnellingPro-UE4/Releases) to download the plugin for your Unreal Engine version
 * Copy the plugin folder either to your project's /plugins folder
 * Alternatively, the plugin can be used as an engine plugin, by copying the folder into your engine version, under the plugins/marketplace folder
 * When you open UE4, either hit the Manage Plugins button that pops up, or select the Edit -> Plugins menu item
@@ -20,7 +22,7 @@ It works by fading out peripheral vision. The subconscious uses peripheral visio
 
 Additionally, the periphery can be replaced with static imagery - such as a skybox - to counteract motion even more strongly, "grounding" users in a static reference frame.
 
-![VR Tunnelling Pro](https://thumbs.gfycat.com/EntireSelfishBlackfootedferret-size_restricted.gif)
+![VR Tunnelling Pro](https://thumbs.gfycat.com/DemandingDecentChicken-size_restricted.gif)
 
 ## Key Features
 * Scene Component that can be dropped onto your player character
