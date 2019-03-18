@@ -6,7 +6,7 @@ VRTP is designed not only as a plugin, but a platform for experimenting with and
 
 ## Quick Installation & Usage
 To use the plugin within your project:
-* Go to [Releases](https://github.com/sigtrapgames/VrTunnellingPro-UE4/Releases) to download the plugin for your Unreal Engine version
+* Go to [Releases](https://github.com/sigtrapgames/VrTunnellingPro-UE4/releases) to download the plugin for your Unreal Engine version
 * Copy the plugin folder either to your project's /plugins folder
 * Alternatively, the plugin can be used as an engine plugin, by copying the folder into your engine version, under the plugins/marketplace folder
 * When you open UE4, either hit the Manage Plugins button that pops up, or select the Edit -> Plugins menu item
