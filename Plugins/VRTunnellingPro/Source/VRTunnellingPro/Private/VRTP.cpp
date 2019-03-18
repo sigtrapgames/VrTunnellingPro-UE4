@@ -22,10 +22,6 @@
 //******************************************************
 #include "Components/ActorComponent.h"
 #include "Components/SceneComponent.h"
-// DEV BRANCH
-/*
-#include "Components/SceneCaptureComponent2D.h"
-*/
 #include "Camera/CameraComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "IHeadMountedDisplay.h"
@@ -109,10 +105,6 @@ void UVRTunnellingPro::BeginDestroy()
 
 void UVRTunnellingPro::CacheSettings()
 {
-	// DEV BRANCH
-	/*
-	CageBlueprintSwap			= CageBlueprint;
-	*/
 	SkyboxBlueprintSwap = SkyboxBlueprint;
 	PostProcessMaterialSwap = PostProcessMaterial;
 	EffectColorSwap = EffectColor;
@@ -151,10 +143,6 @@ void UVRTunnellingPro::InitFromPreset()
 
 	if (!bEnablePreset) 
 	{
-		// DEV BRANCH
-		/*
-		CageBlueprint			= CageBlueprintSwap;
-		*/
 		SkyboxBlueprint			= SkyboxBlueprintSwap;
 		PostProcessMaterial		= PostProcessMaterialSwap;
 		EffectColor				= EffectColorSwap;
@@ -263,10 +251,6 @@ void UVRTunnellingPro::TickComponent(float DeltaTime, enum ELevelTick TickType, 
 	{
 		CaptureInit = true;
 		InitCapture();
-		// DEV BRANCH
-		/*
-		InitCage();
-		*/
 		InitSkybox();
 	}
 
@@ -470,10 +454,6 @@ void UVRTunnellingPro::FViewExtension::PreRenderViewFamily_RenderThread(FRHIComm
 	{
 		return;
 	}
-	// DEV BRANCH
-	/*
-	FTransform OldTransform;
-	*/
 	FTransform NewTransform;
 	
 	{
@@ -508,23 +488,9 @@ void UVRTunnellingPro::FViewExtension::PreRenderViewFamily_RenderThread(FRHIComm
 			return;
 		}
 
-		// DEV BRANCH
-		/*
-		OldTransform = MotionControllerComponent->RenderThreadRelativeTransform;
-		PrevTransform = OldTransform;
-		*/
 		NewTransform = FTransform(Orientation, Position, MotionControllerComponent->RenderThreadComponentScale);
 		
 	} // Release the lock on the MotionControllerComponent
-
-
-	// DEV BRANCH
-	/*
-	// Apply rotation delta corrections based on FOV
-	FRotator RotationDelta = NewTransform.GetRotation().Rotator() - PrevTransform.GetRotation().Rotator();
-	MotionControllerComponent->PostProcessMID->SetScalarParameterValue("U", RotationDelta.Yaw / MotionControllerComponent->HFov);
-	MotionControllerComponent->PostProcessMID->SetScalarParameterValue("V", RotationDelta.Pitch / MotionControllerComponent->VFov);
-	*/
 }
 
 void UVRTunnellingPro::FViewExtension::PostRenderViewFamily_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneViewFamily& InViewFamily)
@@ -560,73 +526,6 @@ float UVRTunnellingPro::GetParameterValue(FName InName, bool& bValueFound)
 
 void UVRTunnellingPro::InitCapture()
 {
-	// DEV BRANCH
-	/*
-	// Initialise Scene Captures
-	SceneCaptureLeft = NewObject<USceneCaptureComponent2D>(GetOwner());
-	SceneCaptureRight = NewObject<USceneCaptureComponent2D>(GetOwner());
-	
-	TL = NewObject<UTextureRenderTarget2D>();
-	TL->ClearColor = FLinearColor::Black;
-	TL->InitAutoFormat(1024, 1024);
-	TL->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
-	TL->TargetGamma = 1.0;
-
-	TR = NewObject<UTextureRenderTarget2D>();
-	TR->ClearColor = FLinearColor::Black;
-	TR->InitAutoFormat(1024, 1024);
-	TR->RenderTargetFormat = ETextureRenderTargetFormat::RTF_RGBA8;
-	TR->TargetGamma = 1.0;
-
-	SceneCaptureLeft->TextureTarget = TL;
-	SceneCaptureRight->TextureTarget = TR;
-
-	SceneCaptureLeft->bUseCustomProjectionMatrix = true;
-	SceneCaptureRight->bUseCustomProjectionMatrix = true;
-
-	SceneCaptureLeft->bCaptureOnMovement = false;
-	SceneCaptureRight->bCaptureOnMovement = false;
-
-	SceneCaptureLeft->bCaptureEveryFrame = true;
-	SceneCaptureRight->bCaptureEveryFrame = true;
-
-	SceneCaptureLeft->bAlwaysPersistRenderingState = true;
-	SceneCaptureRight->bAlwaysPersistRenderingState = true;
-
-	SceneCaptureLeft->bAutoActivate = true;
-	SceneCaptureRight->bAutoActivate = true;
-
-	SceneCaptureLeft->CaptureSource = ESceneCaptureSource::SCS_SceneColorHDR;
-	SceneCaptureRight->CaptureSource = ESceneCaptureSource::SCS_SceneColorHDR;
-
-	SceneCaptureLeft->CaptureStereoPass = EStereoscopicPass::eSSP_LEFT_EYE;
-	SceneCaptureRight->CaptureStereoPass = EStereoscopicPass::eSSP_RIGHT_EYE;
-
-	SceneCaptureLeft->ShowOnlyActorComponents(GetOwner());
-	SceneCaptureRight->ShowOnlyActorComponents(GetOwner());
-
-	SceneCaptureLeft->RegisterComponent();
-	SceneCaptureRight->RegisterComponent();
-
-	SceneCaptureLeft->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureLeft->ShowFlags.SetAtmosphericFog(false);
-	SceneCaptureLeft->ShowFlags.SetBloom(false);
-	SceneCaptureLeft->ShowFlags.SetBSP(false);
-	SceneCaptureLeft->ShowFlags.SetDeferredLighting(false);
-	SceneCaptureLeft->ShowFlags.SetEyeAdaptation(false);
-	SceneCaptureLeft->ShowFlags.SetFog(false);
-	SceneCaptureLeft->ShowFlags.SetVolumetricFog(false);
-
-	SceneCaptureRight->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureRight->ShowFlags.SetAtmosphericFog(false);
-	SceneCaptureRight->ShowFlags.SetBloom(false);
-	SceneCaptureRight->ShowFlags.SetBSP(false);
-	SceneCaptureRight->ShowFlags.SetDeferredLighting(false);
-	SceneCaptureRight->ShowFlags.SetEyeAdaptation(false);
-	SceneCaptureRight->ShowFlags.SetFog(false);
-	SceneCaptureRight->ShowFlags.SetVolumetricFog(false);
-	*/
-
 	// Initialise Cube Capture
 	SceneCaptureCube = NewObject<USceneCaptureComponentCube>(GetOwner());
 	
@@ -663,98 +562,11 @@ void UVRTunnellingPro::InitCapture()
 			IHeadMountedDisplay* HMD = GEngine->XRSystem->GetHMDDevice();
 			HMD->GetFieldOfView(HFov, VFov);
 
-			// DEV BRANCH
-			/*
-			SceneCaptureLeft->AddRelativeLocation(FVector(0, -(HMD->GetInterpupillaryDistance() * 50), 0));
-			SceneCaptureRight->AddRelativeLocation(FVector(0, (HMD->GetInterpupillaryDistance() * 50), 0));
-			SceneCaptureLeft->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
-			SceneCaptureRight->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
-			*/
 			SceneCaptureCube->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
-			
-			// DEV BRANCH
-			/*
-			GetProjectionMatrices();
-			PostProcessMID->SetTextureParameterValue(FName("TL"), TL);
-			PostProcessMID->SetTextureParameterValue(FName("TR"), TR);
-			*/
-
 			PostProcessMID->SetTextureParameterValue(FName("TC"), TC);
 		}
-		
 	}
 }
-
-// DEV BRANCH
-/*
-void UVRTunnellingPro::GetProjectionMatrices()
-{
-	ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-
-	FVector ViewLocation = FVector::ZeroVector;
-	FRotator ViewRotation = FRotator::ZeroRotator;
-	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(ViewLocation, ViewRotation);
-
-	if (LocalPlayer != NULL && LocalPlayer->ViewportClient != NULL && LocalPlayer->ViewportClient->Viewport != NULL)
-	{
-		FViewport* InViewport = LocalPlayer->ViewportClient->Viewport;
-		const bool bStereoRendering = GEngine->IsStereoscopic3D(InViewport);
-
-		FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(
-			InViewport,
-			GetWorld()->Scene,
-			LocalPlayer->ViewportClient->EngineShowFlags).SetRealtimeUpdate(true)
-		);
-
-		int NumViews = bStereoRendering ? 2 : 1;
-		for (int32 i = 0; i < NumViews; ++i)
-		{
-			EStereoscopicPass PassType = !bStereoRendering ? eSSP_FULL : ((i == 0) ? eSSP_LEFT_EYE : eSSP_RIGHT_EYE);
-			FSceneView* View = LocalPlayer->CalcSceneView(&ViewFamily, ViewLocation, ViewRotation, InViewport, NULL, PassType);
-
-			switch (PassType)
-			{
-			case eSSP_LEFT_EYE:
-				SceneCaptureLeft->CustomProjectionMatrix = View->ViewMatrices.GetProjectionMatrix();
-				break;
-			case eSSP_RIGHT_EYE:
-				SceneCaptureRight->CustomProjectionMatrix = View->ViewMatrices.GetProjectionMatrix();
-				break;
-			default:
-				break;
-			}
-		}
-	}
-}
-
-void UVRTunnellingPro::InitCage()
-{
-	if (CageBlueprint != NULL)
-	{
-		FVector Location = GetOwner()->GetActorLocation();
-		FRotator Rotation = GetOwner()->GetActorRotation();
-		FActorSpawnParameters SpawnInfo;
-		SpawnInfo.Owner = GetOwner();
-		Cage = GetWorld()->SpawnActor(CageBlueprint, &Location, &Rotation, SpawnInfo);
-
-		if (Cage != NULL)
-		{
-			Cage->GetRootComponent()->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			TArray<UActorComponent*> MeshComponents = Cage->GetComponentsByClass(UStaticMeshComponent::StaticClass());
-			for (int32 i = 0; i < MeshComponents.Num(); ++i)
-			{
-				UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(MeshComponents[i]);
-				Mesh->SetOwnerNoSee(true);
-			}
-
-			SceneCaptureLeft->ShowOnlyActorComponents(Cage);
-			SceneCaptureRight->ShowOnlyActorComponents(Cage);
-		}
-
-
-	}
-}
-*/
 
 void UVRTunnellingPro::InitSkybox()
 {
@@ -802,10 +614,6 @@ void UVRTunnellingPro::ApplyBackgroundMode()
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 1.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 0.0f);
-			// DEV BRANCH
-			/*
-			if (Cage != NULL) Cage->SetActorHiddenInGame(true);
-			*/
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(true);
 			break;
 
@@ -813,40 +621,13 @@ void UVRTunnellingPro::ApplyBackgroundMode()
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 0.0f);
-			// DEV BRANCH
-			/*
-			if (Cage != NULL) Cage->SetActorHiddenInGame(true);
-			*/
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(false);
 			break;
 		
-		// DEV BRANCH
-		/*
-		case EVRTPBackgroundMode::MM_CAGECOLOR:
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 0.0f);
-			if (Cage != NULL) Cage->SetActorHiddenInGame(false);
-			if (Skybox != NULL) Skybox->SetActorHiddenInGame(true);
-			break;
-
-		case EVRTPBackgroundMode::MM_CAGESKYBOX:
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 0.0f);
-			if (Cage != NULL) Cage->SetActorHiddenInGame(false);
-			if (Skybox != NULL) Skybox->SetActorHiddenInGame(false);
-			break;
-		*/
-
 		case EVRTPBackgroundMode::MM_BLUR:
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 1.0f);
-			// DEV BRANCH
-			/*
-			if (Cage != NULL) Cage->SetActorHiddenInGame(true);
-			*/
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(true);
 			break;
 	}
