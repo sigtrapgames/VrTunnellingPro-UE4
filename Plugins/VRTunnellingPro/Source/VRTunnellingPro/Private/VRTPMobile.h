@@ -39,95 +39,95 @@ struct FVRTPMPreset
 
 	//Effect Vignette Color
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
-		FLinearColor EffectColor;
+	FLinearColor EffectColor;
 
 	//Effect Vignette Coverage
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-		float EffectCoverage;
+	float EffectCoverage;
 
 	//Effect Vignette Feather
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings", meta = (ClampMin = "0.0", ClampMax = "10.0"))
-		float EffectFeather;
+	float EffectFeather;
 
 	//Effect Background Mode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
-		EVRTPMBackgroundMode BackgroundMode;
+	EVRTPMBackgroundMode BackgroundMode;
 
 	//Enable Effect Colour
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
-		bool ApplyEffectColor;
+	bool ApplyEffectColor;
 
 	//Force Vignette Effect (Useful for debugging)
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
-		bool ForceEffect;
+	bool ForceEffect;
 
 	//Effect Mask Mode
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings|Mask Settings")
-		EVRTPMMaskMode MaskMode;
+	EVRTPMMaskMode MaskMode;
 
 	//Effect Mask Stencil Index
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings|Mask Settings", meta = (ClampMin = "0", ClampMax = "255"))
-		int32 StencilIndex;
+	int32 StencilIndex;
 
 	//Enable Effect for Angular Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity")
-		bool bUseAngularVelocity;
+	bool bUseAngularVelocity;
 
 	//Angular Effect Strength
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "10.0"))
-		float AngularStrength;
+	float AngularStrength;
 
 	//Minimum Angular Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "180.0"))
-		float AngularMin;
+	float AngularMin;
 
 	//Maximum Angular Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "180.0"))
-		float AngularMax;
+	float AngularMax;
 
 	//Angular Smoothing
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-		float AngularSmoothing;
+	float AngularSmoothing;
 
 	//Enable Effect for Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity")
-		bool bUseVelocity;
+	bool bUseVelocity;
 
 	//Velocity Effect Strength
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "10.0"))
-		float VelocityStrength;
+	float VelocityStrength;
 
 	//Minimum Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
-		float VelocityMin;
+	float VelocityMin;
 
 	//Maximum Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
-		float VelocityMax;
+	float VelocityMax;
 
 	//Velocity Smoothing
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-		float VelocitySmoothing;
+	float VelocitySmoothing;
 
 	//Enable Effect for Acceleration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration")
-		bool bUseAcceleration;
+	bool bUseAcceleration;
 
 	//Acceleration Effect Strength
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "10.0"))
-		float AccelerationStrength;
+	float AccelerationStrength;
 
 	//Minimum Acceleration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
-		float AccelerationMin;
+	float AccelerationMin;
 
 	//Maximum Acceleration
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
-		float AccelerationMax;
+	float AccelerationMax;
 
 	//Acceleration Smoothing
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "1.0"))
-		float AccelerationSmoothing;
+	float AccelerationSmoothing;
 
 	//Constructor
 	FVRTPMPreset()
@@ -350,28 +350,28 @@ public:
 	bool CaptureInit;
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void ApplyPreset(UVRTPMPresetData* NewPreset);
+	void ApplyPreset(UVRTPMPresetData* NewPreset);
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void SetBackgroundMode(EVRTPMBackgroundMode NewBackgroundMode);
+	void SetBackgroundMode(EVRTPMBackgroundMode NewBackgroundMode);
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void SetMaskMode(EVRTPMMaskMode NewMaskMode);
+	void SetMaskMode(EVRTPMMaskMode NewMaskMode);
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void SetEffectColor(FLinearColor NewColor);
+	void SetEffectColor(FLinearColor NewColor);
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void ApplyColor(bool Enabled);
+	void ApplyColor(bool Enabled);
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void SetStencilMask(int32 NewStencilIndex, bool UpdateMaskedObjects = true);
+	void SetStencilMask(int32 NewStencilIndex, bool UpdateMaskedObjects = true);
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void UpdateMaskedObjects();
+	void UpdateMaskedObjects();
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
-		void SetFeather(float NewFeather);
+	void SetFeather(float NewFeather);
 
 protected:
 	virtual void BeginPlay() override;
