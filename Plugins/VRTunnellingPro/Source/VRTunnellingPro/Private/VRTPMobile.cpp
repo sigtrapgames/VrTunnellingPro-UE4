@@ -22,7 +22,6 @@ UVRTunnellingProMobile::UVRTunnellingProMobile()
 void UVRTunnellingProMobile::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
-
 }
 
 
@@ -170,15 +169,27 @@ void UVRTunnellingProMobile::TickComponent(float DeltaTime, ELevelTick TickType,
 		CaptureInit = true;
 		InitCapture();
 		InitSkybox();
+		InitIris();
+		UpdateEffectSettings();
 	}
 
-	// Send Actor directional vectors for skybox (cubemap) lookup
 	if (PostProcessMID)
 	{
 		CalculateMotion(DeltaTime);
 		PostProcessMID->SetVectorParameterValue(FName("Up"), GetOwner()->GetActorUpVector());
 		PostProcessMID->SetVectorParameterValue(FName("Right"), GetOwner()->GetActorRightVector());
 		PostProcessMID->SetVectorParameterValue(FName("Forward"), GetOwner()->GetActorForwardVector());
+	}
+
+	if (IrisOuterMID && IrisInnerMID)
+	{
+		IrisOuterMID->SetVectorParameterValue(FName("Up"), GetOwner()->GetActorUpVector());
+		IrisOuterMID->SetVectorParameterValue(FName("Right"), GetOwner()->GetActorRightVector());
+		IrisOuterMID->SetVectorParameterValue(FName("Forward"), GetOwner()->GetActorForwardVector());
+
+		IrisInnerMID->SetVectorParameterValue(FName("Up"), GetOwner()->GetActorUpVector());
+		IrisInnerMID->SetVectorParameterValue(FName("Right"), GetOwner()->GetActorRightVector());
+		IrisInnerMID->SetVectorParameterValue(FName("Forward"), GetOwner()->GetActorForwardVector());
 	}
 
 }
@@ -238,9 +249,7 @@ void UVRTunnellingProMobile::InitCapture()
 		PostProcessMID = UMaterialInstanceDynamic::Create(PostProcessMaterial, this);
 		PlayerCamera->PostProcessSettings.AddBlendable(PostProcessMID, 1.0f);
 		UpdateEffectSettings();
-
 		SceneCaptureCube->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
-
 		PostProcessMID->SetTextureParameterValue(FName("TC"), TC);
 	}
 }
@@ -271,6 +280,25 @@ void UVRTunnellingProMobile::InitSkybox()
 	}
 }
 
+void UVRTunnellingProMobile::InitIris()
+{
+	UCameraComponent* PlayerCamera = GetOwner()->FindComponentByClass<UCameraComponent>();
+	if (PlayerCamera != NULL && IrisMesh != NULL)
+	{
+		Iris = NewObject<UStaticMeshComponent>(GetOwner());
+		Iris->RegisterComponent();
+		Iris->SetStaticMesh(IrisMesh);
+		IrisOuterMID = Iris->CreateDynamicMaterialInstance(0, Iris->GetMaterial(0));
+		IrisInnerMID = Iris->CreateDynamicMaterialInstance(1, Iris->GetMaterial(1));
+		Iris->SetWorldTransform(FTransform(FRotator(90, 0, 0), FVector(30, 0, 0), FVector(1.5, 1.5, 1.5)));
+		Iris->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
+		IrisInnerMID->SetTextureParameterValue(FName("TC"), TC);
+		IrisOuterMID->SetTextureParameterValue(FName("TC"), TC);
+		Iris->SetHiddenInGame(true);
+	}
+	
+}
+
 void UVRTunnellingProMobile::SetBackgroundMode(EVRTPMBackgroundMode NewBackgroundMode)
 {
 	BackgroundMode = NewBackgroundMode;
@@ -288,14 +316,22 @@ void UVRTunnellingProMobile::ApplyBackgroundMode()
 	switch (BackgroundMode)
 	{
 		case EVRTPMBackgroundMode::MM_COLOR:
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 1.0f);
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
+			if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 1.0f);
+			if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
+			if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("BackgroundColor"), 1.0f);
+			if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
+			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("BackgroundColor"), 1.0f);
+			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(true);
 			break;
 
 		case EVRTPMBackgroundMode::MM_SKYBOX:
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
+			if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
+			if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
+			if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
+			if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
+			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
+			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(false);
 			break;
 	}
@@ -303,50 +339,65 @@ void UVRTunnellingProMobile::ApplyBackgroundMode()
 
 void UVRTunnellingProMobile::ApplyMaskMode()
 {
-	switch (MaskMode)
+	if (PostProcessMID) 
 	{
-		case EVRTPMMaskMode::MM_OFF:
-			PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 0.0f);
-			break;
+		switch (MaskMode)
+		{
+			case EVRTPMMaskMode::MM_OFF:
+				PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("Enabled"), 0.0f);
+				if (Iris) Iris->SetHiddenInGame(false);
+				break;
 
-		case EVRTPMMaskMode::MM_MASK:
-			PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 1.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 0.0f);
-			break;
+			case EVRTPMMaskMode::MM_MASK:
+				PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 1.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("Enabled"), 1.0f);
+				if (Iris) Iris->SetHiddenInGame(true);
+				break;
 
-		case EVRTPMMaskMode::MM_PORTAL:
-			PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 1.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 0.0f);
-			break;
+			case EVRTPMMaskMode::MM_PORTAL:
+				PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 1.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("Enabled"), 1.0f);
+				if (Iris) Iris->SetHiddenInGame(true);
+				break;
 
-		case EVRTPMMaskMode::MM_WINDOW:
-			PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 0.0f);
-			PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 1.0f);
-			break;
+			case EVRTPMMaskMode::MM_WINDOW:
+				PostProcessMID->SetScalarParameterValue(FName("MaskOn"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskPortal"), 0.0f);
+				PostProcessMID->SetScalarParameterValue(FName("MaskWindow"), 1.0f);
+				PostProcessMID->SetScalarParameterValue(FName("Enabled"), 1.0f);
+				if (Iris) Iris->SetHiddenInGame(true);
+				break;
+		}
 	}
 }
 
 void UVRTunnellingProMobile::SetEffectColor(FLinearColor NewColor)
 {
 	EffectColor = NewColor;
-	PostProcessMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
+	if (PostProcessMID) PostProcessMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
+	if (IrisOuterMID) IrisOuterMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
+	if (IrisInnerMID) IrisInnerMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
+
 }
 
 void UVRTunnellingProMobile::SetFeather(float NewFeather)
 {
 	EffectFeather = NewFeather;
-	PostProcessMID->SetScalarParameterValue(FName("Feather"), EffectFeather);
+	if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("Feather"), EffectFeather);
+	if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("Feather"), EffectFeather);
 }
 
 void UVRTunnellingProMobile::SetStencilMask(int32 NewStencilIndex, bool UpdateMaskedObjects)
 {
 	StencilIndex = NewStencilIndex;
-	PostProcessMID->SetScalarParameterValue(FName("MaskStencil"), (float)StencilIndex);
+	if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("MaskStencil"), (float)StencilIndex);
 	if (UpdateMaskedObjects) ApplyStencilMasks();
 }
 
@@ -385,7 +436,9 @@ void UVRTunnellingProMobile::ApplyColor(bool Enabled)
 {
 	ApplyEffectColor = Enabled;
 	SetEffectColor(EffectColor);
-	PostProcessMID->SetScalarParameterValue(FName("ApplyEffectColor"), (float)ApplyEffectColor);
+	if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("ApplyEffectColor"), (float)ApplyEffectColor);
+	if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("ApplyEffectColor"), (float)ApplyEffectColor);
+	if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("ApplyEffectColor"), (float)ApplyEffectColor);
 }
 
 void UVRTunnellingProMobile::CalculateMotion(float DeltaTime)
@@ -393,71 +446,72 @@ void UVRTunnellingProMobile::CalculateMotion(float DeltaTime)
 	float Radius = 0;
 	float RadiusTarget = 0;
 	float VelocityFinal = 0;
-	if (PostProcessMID != NULL)
+	if (!ForceEffect)
 	{
-		if (!ForceEffect)
+		if (bUseAngularVelocity)
 		{
-			if (bUseAngularVelocity)
+			float AngleDelta = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(GetOwner()->GetActorForwardVector(), LastForward))) / DeltaTime;
+			// Check for divide by zero
+			if (FMath::IsNearlyEqual(AngularMin, AngularMax, 0.001f)) AngleDelta = 0;
+			else AngleDelta = (AngleDelta - AngularMin) / (AngularMax - AngularMin);
+			float InterpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1, 20), AngularSmoothing);
+			AngleSmoothed = FMath::FInterpTo(AngleSmoothed, AngleDelta, DeltaTime, InterpSpeed);
+			RadiusTarget += AngleSmoothed * (AngularStrength * 0.5);
+			LastForward = GetOwner()->GetActorForwardVector();
+		}
+
+		if (bUseVelocity || bUseAcceleration)
+		{
+			float VelocityDelta = FVector::Distance(GetOwner()->GetActorLocation(), LastPosition) / DeltaTime;
+			LastPosition = GetOwner()->GetActorLocation();
+
+			if (bUseVelocity)
 			{
-				float AngleDelta = FMath::RadiansToDegrees(FMath::Acos(FVector::DotProduct(GetOwner()->GetActorForwardVector(), LastForward))) / DeltaTime;
+				float InterpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1, 20), VelocitySmoothing);
+				VelocitySmoothed = FMath::FInterpTo(VelocitySmoothed, VelocityDelta, DeltaTime, InterpSpeed);
+
 				// Check for divide by zero
-				if (FMath::IsNearlyEqual(AngularMin, AngularMax, 0.001f)) AngleDelta = 0;
-				else AngleDelta = (AngleDelta - AngularMin) / (AngularMax - AngularMin);
-				float InterpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1, 20), AngularSmoothing);
-				AngleSmoothed = FMath::FInterpTo(AngleSmoothed, AngleDelta, DeltaTime, InterpSpeed);
-				RadiusTarget += AngleSmoothed * (AngularStrength * 0.5);
-				LastForward = GetOwner()->GetActorForwardVector();
+				if (!FMath::IsNearlyEqual(VelocityMin, VelocityMax, 0.001f))
+				{
+					VelocityFinal = FMath::Clamp((VelocitySmoothed - VelocityMin) / (VelocityMax - VelocityMin), 0.0f, 1.0f);
+				}
+				RadiusTarget += VelocityFinal * VelocityStrength;
 			}
 
-			if (bUseVelocity || bUseAcceleration)
+			if (bUseAcceleration)
 			{
-				float VelocityDelta = FVector::Distance(GetOwner()->GetActorLocation(), LastPosition) / DeltaTime;
-				LastPosition = GetOwner()->GetActorLocation();
+				float AccelerationDelta = FMath::Abs(GetOwner()->GetVelocity().Size() - LastSpeed) / DeltaTime;
+				LastSpeed = GetOwner()->GetVelocity().Size();
 
-				if (bUseVelocity)
+				// Check for divide by zero
+				if (!FMath::IsNearlyEqual(AccelerationMin, AccelerationMax, 0.001f))
 				{
-					float InterpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1, 20), VelocitySmoothing);
-					VelocitySmoothed = FMath::FInterpTo(VelocitySmoothed, VelocityDelta, DeltaTime, InterpSpeed);
-
-					// Check for divide by zero
-					if (!FMath::IsNearlyEqual(VelocityMin, VelocityMax, 0.001f))
-					{
-						VelocityFinal = FMath::Clamp((VelocitySmoothed - VelocityMin) / (VelocityMax - VelocityMin), 0.0f, 1.0f);
-					}
-					RadiusTarget += VelocityFinal * VelocityStrength;
+					AccelerationDelta = FMath::Clamp((AccelerationDelta - AccelerationMin) / (AccelerationMax - AccelerationMin), 0.0f, 1.0f);
 				}
 
-				if (bUseAcceleration)
-				{
-					float AccelerationDelta = FMath::Abs(GetOwner()->GetVelocity().Size() - LastSpeed) / DeltaTime;
-					LastSpeed = GetOwner()->GetVelocity().Size();
-
-					// Check for divide by zero
-					if (!FMath::IsNearlyEqual(AccelerationMin, AccelerationMax, 0.001f))
-					{
-						AccelerationDelta = FMath::Clamp((AccelerationDelta - AccelerationMin) / (AccelerationMax - AccelerationMin), 0.0f, 1.0f);
-					}
-
-					float InterpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1, 20), AccelerationSmoothing);
-					AccelerationSmoothed = FMath::FInterpTo(AccelerationSmoothed, AccelerationDelta, DeltaTime, InterpSpeed);
-					RadiusTarget += AccelerationSmoothed * AccelerationStrength;
-				}
+				float InterpSpeed = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1, 20), AccelerationSmoothing);
+				AccelerationSmoothed = FMath::FInterpTo(AccelerationSmoothed, AccelerationDelta, DeltaTime, InterpSpeed);
+				RadiusTarget += AccelerationSmoothed * AccelerationStrength;
 			}
+		}
 
-			if (bUseAngularVelocity || bUseAcceleration || bUseVelocity)
-			{
-				Radius = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1.5, 1 - EffectCoverage), RadiusTarget);
-			}
-			else
-			{
-				Radius = 1.5f;
-			}
+		if (bUseAngularVelocity || bUseAcceleration || bUseVelocity)
+		{
+			Radius = FMath::GetMappedRangeValueClamped(FVector2D(0, 1), FVector2D(1.5, 1 - EffectCoverage), RadiusTarget);
 		}
 		else
 		{
-			Radius = 0.3f;
+			Radius = 1.5f;
 		}
-
-		PostProcessMID->SetScalarParameterValue(FName("Radius"), Radius);
 	}
+	else
+	{
+		Radius = 0.3f;
+	}
+
+	if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("Radius"), Radius);
+	if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("Radius"), Radius);
+	if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("Radius"), Radius);
+
+	
 }

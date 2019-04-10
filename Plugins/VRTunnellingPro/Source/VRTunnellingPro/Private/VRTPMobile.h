@@ -37,6 +37,10 @@ struct FVRTPMPreset
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Post Process")
 	UMaterial* PostProcessMaterial;
 
+	//Iris Mesh to use
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Iris")
+	UStaticMesh* IrisMesh;
+
 	//Effect Vignette Color
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
 	FLinearColor EffectColor;
@@ -134,6 +138,7 @@ struct FVRTPMPreset
 	{
 		SkyboxBlueprint = NULL;
 		PostProcessMaterial = NULL;
+		IrisMesh = NULL;
 		EffectColor = FLinearColor::Black;
 		EffectCoverage = 0;
 		EffectFeather = 0;
@@ -202,6 +207,12 @@ public:
 	UMaterial* PostProcessMaterial;
 	UPROPERTY(EditAnywhere)
 	UMaterial* PostProcessMaterialSwap;
+
+	//Iris Mesh to use
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "VR Tunnelling")
+	UStaticMesh* IrisMesh;
+	UPROPERTY(EditAnywhere)
+	UStaticMesh* IrisMeshSwap;
 
 	//Effect Vignette Color
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SimpleDisplay, Category = "VR Tunnelling|Effect Settings")
@@ -347,6 +358,9 @@ public:
 	float VFov;
 	UMaterialInstanceDynamic* PostProcessMID;
 	AActor* Skybox;
+	UStaticMeshComponent* Iris;
+	UMaterialInstanceDynamic* IrisOuterMID;
+	UMaterialInstanceDynamic* IrisInnerMID;
 	bool CaptureInit;
 
 	UFUNCTION(BlueprintCallable, Category = "VR Tunnelling")
@@ -391,6 +405,7 @@ private:
 	void CacheSettings();
 	void InitCapture();
 	void InitSkybox();
+	void InitIris();
 	void InitFromPreset();
 	void SetPresetData(UVRTPMPresetData* NewPreset);
 	void UpdateEffectSettings();
@@ -399,6 +414,4 @@ private:
 	void ApplyBackgroundMode();
 	void ApplyMaskMode();
 	void ApplyStencilMasks();
-		
-	
 };
