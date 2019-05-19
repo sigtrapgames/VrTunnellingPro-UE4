@@ -6,6 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/TextureCube.h"
 #include "VRTPMask.h"
 
 UVRTunnellingProMobile::UVRTunnellingProMobile()
@@ -28,6 +29,7 @@ void UVRTunnellingProMobile::OnComponentDestroyed(bool bDestroyingHierarchy)
 void UVRTunnellingProMobile::CacheSettings()
 {
 	SkyboxBlueprintSwap = SkyboxBlueprint;
+	CubeMapOverrideSwap = CubeMapOverride;
 	PostProcessMaterialSwap = PostProcessMaterial;
 	EffectColorSwap = EffectColor;
 	EffectCoverageSwap = EffectCoverage;
@@ -66,6 +68,7 @@ void UVRTunnellingProMobile::InitFromPreset()
 	if (!bEnablePreset)
 	{
 		SkyboxBlueprint = SkyboxBlueprintSwap;
+		CubeMapOverride = CubeMapOverrideSwap;
 		PostProcessMaterial = PostProcessMaterialSwap;
 		EffectColor = EffectColorSwap;
 		EffectCoverage = EffectCoverageSwap;
@@ -98,31 +101,32 @@ void UVRTunnellingProMobile::SetPresetData(UVRTPMPresetData* NewPreset)
 	if (NewPreset)
 	{
 		Preset = NewPreset;
-		SkyboxBlueprint = Preset->Data.SkyboxBlueprint;
-		PostProcessMaterial = Preset->Data.PostProcessMaterial;
-		EffectColor = Preset->Data.EffectColor;
-		EffectCoverage = Preset->Data.EffectCoverage;
-		EffectFeather = Preset->Data.EffectFeather;
-		BackgroundMode = Preset->Data.BackgroundMode;
-		ApplyEffectColor = Preset->Data.ApplyEffectColor;
-		ForceEffect = Preset->Data.ForceEffect;
-		MaskMode = Preset->Data.MaskMode;
-		StencilIndex = Preset->Data.StencilIndex;
-		bUseAngularVelocity = Preset->Data.bUseAngularVelocity;
-		AngularStrength = Preset->Data.AngularStrength;
-		AngularMin = Preset->Data.AngularMin;
-		AngularMax = Preset->Data.AngularMax;
-		AngularSmoothing = Preset->Data.AngularSmoothing;
-		bUseVelocity = Preset->Data.bUseVelocity;
-		VelocityStrength = Preset->Data.VelocityStrength;
-		VelocityMin = Preset->Data.VelocityMin;
-		VelocityMax = Preset->Data.VelocityMax;
-		VelocitySmoothing = Preset->Data.VelocitySmoothing;
-		bUseAcceleration = Preset->Data.bUseAcceleration;
-		AccelerationStrength = Preset->Data.AccelerationStrength;
-		AccelerationMin = Preset->Data.AccelerationMin;
-		AccelerationMax = Preset->Data.AccelerationMax;
-		AccelerationSmoothing = Preset->Data.AccelerationSmoothing;
+		SkyboxBlueprint			= Preset->Data.SkyboxBlueprint;
+		CubeMapOverride			= Preset->Data.CubeMapOverride;
+		PostProcessMaterial		= Preset->Data.PostProcessMaterial;
+		EffectColor				= Preset->Data.EffectColor;
+		EffectCoverage			= Preset->Data.EffectCoverage;
+		EffectFeather			= Preset->Data.EffectFeather;
+		BackgroundMode			= Preset->Data.BackgroundMode;
+		ApplyEffectColor		= Preset->Data.ApplyEffectColor;
+		ForceEffect				= Preset->Data.ForceEffect;
+		MaskMode				= Preset->Data.MaskMode;
+		StencilIndex			= Preset->Data.StencilIndex;
+		bUseAngularVelocity		= Preset->Data.bUseAngularVelocity;
+		AngularStrength			= Preset->Data.AngularStrength;
+		AngularMin				= Preset->Data.AngularMin;
+		AngularMax				= Preset->Data.AngularMax;
+		AngularSmoothing		= Preset->Data.AngularSmoothing;
+		bUseVelocity			= Preset->Data.bUseVelocity;
+		VelocityStrength		= Preset->Data.VelocityStrength;
+		VelocityMin				= Preset->Data.VelocityMin;
+		VelocityMax				= Preset->Data.VelocityMax;
+		VelocitySmoothing		= Preset->Data.VelocitySmoothing;
+		bUseAcceleration		= Preset->Data.bUseAcceleration;
+		AccelerationStrength	= Preset->Data.AccelerationStrength;
+		AccelerationMin			= Preset->Data.AccelerationMin;
+		AccelerationMax			= Preset->Data.AccelerationMax;
+		AccelerationSmoothing	= Preset->Data.AccelerationSmoothing;
 	}
 }
 
@@ -167,8 +171,11 @@ void UVRTunnellingProMobile::TickComponent(float DeltaTime, ELevelTick TickType,
 	if (!CaptureInit)
 	{
 		CaptureInit = true;
-		InitCapture();
-		InitSkybox();
+		if (!CubeMapOverride)
+		{
+			InitCapture();
+			InitSkybox();
+		}
 		InitIris();
 		UpdateEffectSettings();
 	}
@@ -292,8 +299,18 @@ void UVRTunnellingProMobile::InitIris()
 		IrisInnerMID = Iris->CreateDynamicMaterialInstance(1, Iris->GetMaterial(1));
 		Iris->SetWorldTransform(FTransform(FRotator(90, 0, 0), FVector(30, 0, 0), FVector(1.5, 1.5, 1.5)));
 		Iris->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
-		IrisInnerMID->SetTextureParameterValue(FName("TC"), TC);
-		IrisOuterMID->SetTextureParameterValue(FName("TC"), TC);
+		IrisInnerMID->SetScalarParameterValue(FName("CubeMapOverride"), (CubeMapOverride ? 1.0f : 0.0f));
+		IrisOuterMID->SetScalarParameterValue(FName("CubeMapOverride"), (CubeMapOverride ? 1.0f : 0.0f));
+		if (CubeMapOverride != NULL)
+		{
+			IrisOuterMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+			IrisInnerMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+		}
+		else
+		{
+			IrisInnerMID->SetTextureParameterValue(FName("TC"), TC);
+			IrisOuterMID->SetTextureParameterValue(FName("TC"), TC);
+		}
 		Iris->SetHiddenInGame(true);
 	}
 	
@@ -332,6 +349,22 @@ void UVRTunnellingProMobile::ApplyBackgroundMode()
 			if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
 			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
 			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
+			
+			if (PostProcessMID) PostProcessMID->SetScalarParameterValue(FName("CubeMapOverride"), (CubeMapOverride ? 1.0f : 0.0f));
+			if (IrisOuterMID) IrisOuterMID->SetScalarParameterValue(FName("CubeMapOverride"), (CubeMapOverride ? 1.0f : 0.0f));
+			if (IrisInnerMID) IrisInnerMID->SetScalarParameterValue(FName("CubeMapOverride"), (CubeMapOverride ? 1.0f : 0.0f));
+			if (CubeMapOverride != NULL)
+			{
+				PostProcessMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+				IrisOuterMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+				IrisInnerMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+			}
+			else
+			{
+				IrisInnerMID->SetTextureParameterValue(FName("TC"), TC);
+				IrisOuterMID->SetTextureParameterValue(FName("TC"), TC);
+			}
+
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(false);
 			break;
 	}
@@ -384,7 +417,6 @@ void UVRTunnellingProMobile::SetEffectColor(FLinearColor NewColor)
 	if (PostProcessMID) PostProcessMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
 	if (IrisOuterMID) IrisOuterMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
 	if (IrisInnerMID) IrisInnerMID->SetVectorParameterValue(FName("EffectColor"), FVector(EffectColor.R, EffectColor.G, EffectColor.B));
-
 }
 
 void UVRTunnellingProMobile::SetFeather(float NewFeather)

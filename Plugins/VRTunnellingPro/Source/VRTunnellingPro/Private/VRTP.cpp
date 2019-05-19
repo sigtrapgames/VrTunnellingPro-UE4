@@ -114,6 +114,7 @@ void UVRTunnellingPro::CacheSettings()
 	CageBlueprintSwap			= CageBlueprint;
 	*/
 	SkyboxBlueprintSwap = SkyboxBlueprint;
+	CubeMapOverrideSwap = CubeMapOverride;
 	PostProcessMaterialSwap = PostProcessMaterial;
 	EffectColorSwap = EffectColor;
 	EffectCoverageSwap = EffectCoverage;
@@ -156,6 +157,7 @@ void UVRTunnellingPro::InitFromPreset()
 		CageBlueprint			= CageBlueprintSwap;
 		*/
 		SkyboxBlueprint			= SkyboxBlueprintSwap;
+		CubeMapOverride			= CubeMapOverrideSwap;
 		PostProcessMaterial		= PostProcessMaterialSwap;
 		EffectColor				= EffectColorSwap;
 		EffectCoverage			= EffectCoverageSwap;
@@ -188,31 +190,32 @@ void UVRTunnellingPro::SetPresetData(UVRTPPresetData* NewPreset)
 	if (NewPreset)
 	{
 		Preset = NewPreset;
-		SkyboxBlueprint				= Preset->Data.SkyboxBlueprint;
-		PostProcessMaterial			= Preset->Data.PostProcessMaterial;
-		EffectColor					= Preset->Data.EffectColor;
-		EffectCoverage				= Preset->Data.EffectCoverage;
-		EffectFeather				= Preset->Data.EffectFeather;
-		BackgroundMode				= Preset->Data.BackgroundMode;
-		ApplyEffectColor			= Preset->Data.ApplyEffectColor;
-		ForceEffect					= Preset->Data.ForceEffect;
-		MaskMode					= Preset->Data.MaskMode;
-		StencilIndex				= Preset->Data.StencilIndex;
-		bUseAngularVelocity			= Preset->Data.bUseAngularVelocity;
-		AngularStrength				= Preset->Data.AngularStrength;
-		AngularMin					= Preset->Data.AngularMin;
-		AngularMax					= Preset->Data.AngularMax;
-		AngularSmoothing			= Preset->Data.AngularSmoothing;
-		bUseVelocity				= Preset->Data.bUseVelocity;
-		VelocityStrength			= Preset->Data.VelocityStrength;
-		VelocityMin					= Preset->Data.VelocityMin;
-		VelocityMax					= Preset->Data.VelocityMax;
-		VelocitySmoothing			= Preset->Data.VelocitySmoothing;
-		bUseAcceleration			= Preset->Data.bUseAcceleration;
-		AccelerationStrength		= Preset->Data.AccelerationStrength;
-		AccelerationMin				= Preset->Data.AccelerationMin;
-		AccelerationMax				= Preset->Data.AccelerationMax;
-		AccelerationSmoothing		= Preset->Data.AccelerationSmoothing;
+		SkyboxBlueprint			= Preset->Data.SkyboxBlueprint;
+		CubeMapOverride			= Preset->Data.CubeMapOverride;
+		PostProcessMaterial		= Preset->Data.PostProcessMaterial;
+		EffectColor				= Preset->Data.EffectColor;
+		EffectCoverage			= Preset->Data.EffectCoverage;
+		EffectFeather			= Preset->Data.EffectFeather;
+		BackgroundMode			= Preset->Data.BackgroundMode;
+		ApplyEffectColor		= Preset->Data.ApplyEffectColor;
+		ForceEffect				= Preset->Data.ForceEffect;
+		MaskMode				= Preset->Data.MaskMode;
+		StencilIndex			= Preset->Data.StencilIndex;
+		bUseAngularVelocity		= Preset->Data.bUseAngularVelocity;
+		AngularStrength			= Preset->Data.AngularStrength;
+		AngularMin				= Preset->Data.AngularMin;
+		AngularMax				= Preset->Data.AngularMax;
+		AngularSmoothing		= Preset->Data.AngularSmoothing;
+		bUseVelocity			= Preset->Data.bUseVelocity;
+		VelocityStrength		= Preset->Data.VelocityStrength;
+		VelocityMin				= Preset->Data.VelocityMin;
+		VelocityMax				= Preset->Data.VelocityMax;
+		VelocitySmoothing		= Preset->Data.VelocitySmoothing;
+		bUseAcceleration		= Preset->Data.bUseAcceleration;
+		AccelerationStrength	= Preset->Data.AccelerationStrength;
+		AccelerationMin			= Preset->Data.AccelerationMin;
+		AccelerationMax			= Preset->Data.AccelerationMax;
+		AccelerationSmoothing	= Preset->Data.AccelerationSmoothing;
 	}	
 }
 
@@ -817,6 +820,15 @@ void UVRTunnellingPro::ApplyBackgroundMode()
 			/*
 			if (Cage != NULL) Cage->SetActorHiddenInGame(true);
 			*/
+			if (CubeMapOverride != NULL)
+			{
+				PostProcessMID->SetScalarParameterValue(FName("CubeMapOverride"), 1.0f);
+				PostProcessMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+			}
+			else
+			{
+				PostProcessMID->SetScalarParameterValue(FName("CubeMapOverride"), 0.0f);
+			}
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(false);
 			break;
 		

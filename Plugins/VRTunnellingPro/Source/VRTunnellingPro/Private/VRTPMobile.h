@@ -6,6 +6,7 @@
 #include "Components/SceneCaptureComponentCube.h"
 #include "Engine/TextureRenderTargetCube.h"
 #include "Engine/DataAsset.h"
+#include "Engine/TextureCube.h"
 #include "VRTPMobile.generated.h"
 
 UENUM(BlueprintType)
@@ -32,6 +33,9 @@ struct FVRTPMPreset
 	//Skybox Blueprint to use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
 	TSubclassOf<class AActor> SkyboxBlueprint;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
+	UTextureCube* CubeMapOverride;
 
 	//Effect Material to use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Post Process")
@@ -137,6 +141,7 @@ struct FVRTPMPreset
 	FVRTPMPreset()
 	{
 		SkyboxBlueprint = NULL;
+		CubeMapOverride = false;
 		PostProcessMaterial = NULL;
 		IrisMesh = NULL;
 		EffectColor = FLinearColor::Black;
@@ -201,6 +206,12 @@ public:
 	TSubclassOf<class AActor> SkyboxBlueprint;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AActor> SkyboxBlueprintSwap;
+
+	//Cube Map texture to use to override skybox capture
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "VR Tunnelling")
+	UTextureCube* CubeMapOverride;
+	UPROPERTY(EditAnywhere)
+	UTextureCube* CubeMapOverrideSwap;
 
 	//Post Process Material to use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "VR Tunnelling")
