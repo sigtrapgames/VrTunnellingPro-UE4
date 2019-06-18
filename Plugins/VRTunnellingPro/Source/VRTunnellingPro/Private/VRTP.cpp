@@ -1,4 +1,3 @@
-// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "VRTP.h"
 #include "GameFramework/Pawn.h"
@@ -25,7 +24,6 @@
 #include "Camera/CameraComponent.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "IHeadMountedDisplay.h"
-
 #include "Engine/GameEngine.h"
 #include "Engine/Scene.h"
 #include "Engine/LocalPlayer.h"
@@ -106,6 +104,7 @@ void UVRTunnellingPro::BeginDestroy()
 void UVRTunnellingPro::CacheSettings()
 {
 	SkyboxBlueprintSwap = SkyboxBlueprint;
+	CubeMapOverrideSwap = CubeMapOverride;
 	PostProcessMaterialSwap = PostProcessMaterial;
 	EffectColorSwap = EffectColor;
 	EffectCoverageSwap = EffectCoverage;
@@ -133,8 +132,7 @@ void UVRTunnellingPro::CacheSettings()
 }
 
 void UVRTunnellingPro::InitFromPreset()
-{
-	
+{	
 	if (Preset && bEnablePreset)
 	{
 		CacheSettings();
@@ -144,6 +142,7 @@ void UVRTunnellingPro::InitFromPreset()
 	if (!bEnablePreset) 
 	{
 		SkyboxBlueprint			= SkyboxBlueprintSwap;
+		CubeMapOverride			= CubeMapOverrideSwap;
 		PostProcessMaterial		= PostProcessMaterialSwap;
 		EffectColor				= EffectColorSwap;
 		EffectCoverage			= EffectCoverageSwap;
@@ -176,31 +175,32 @@ void UVRTunnellingPro::SetPresetData(UVRTPPresetData* NewPreset)
 	if (NewPreset)
 	{
 		Preset = NewPreset;
-		SkyboxBlueprint				= Preset->Data.SkyboxBlueprint;
-		PostProcessMaterial			= Preset->Data.PostProcessMaterial;
-		EffectColor					= Preset->Data.EffectColor;
-		EffectCoverage				= Preset->Data.EffectCoverage;
-		EffectFeather				= Preset->Data.EffectFeather;
-		BackgroundMode				= Preset->Data.BackgroundMode;
-		ApplyEffectColor			= Preset->Data.ApplyEffectColor;
-		ForceEffect					= Preset->Data.ForceEffect;
-		MaskMode					= Preset->Data.MaskMode;
-		StencilIndex				= Preset->Data.StencilIndex;
-		bUseAngularVelocity			= Preset->Data.bUseAngularVelocity;
-		AngularStrength				= Preset->Data.AngularStrength;
-		AngularMin					= Preset->Data.AngularMin;
-		AngularMax					= Preset->Data.AngularMax;
-		AngularSmoothing			= Preset->Data.AngularSmoothing;
-		bUseVelocity				= Preset->Data.bUseVelocity;
-		VelocityStrength			= Preset->Data.VelocityStrength;
-		VelocityMin					= Preset->Data.VelocityMin;
-		VelocityMax					= Preset->Data.VelocityMax;
-		VelocitySmoothing			= Preset->Data.VelocitySmoothing;
-		bUseAcceleration			= Preset->Data.bUseAcceleration;
-		AccelerationStrength		= Preset->Data.AccelerationStrength;
-		AccelerationMin				= Preset->Data.AccelerationMin;
-		AccelerationMax				= Preset->Data.AccelerationMax;
-		AccelerationSmoothing		= Preset->Data.AccelerationSmoothing;
+		SkyboxBlueprint			= Preset->Data.SkyboxBlueprint;
+		CubeMapOverride			= Preset->Data.CubeMapOverride;
+		PostProcessMaterial		= Preset->Data.PostProcessMaterial;
+		EffectColor				= Preset->Data.EffectColor;
+		EffectCoverage			= Preset->Data.EffectCoverage;
+		EffectFeather			= Preset->Data.EffectFeather;
+		BackgroundMode			= Preset->Data.BackgroundMode;
+		ApplyEffectColor		= Preset->Data.ApplyEffectColor;
+		ForceEffect				= Preset->Data.ForceEffect;
+		MaskMode				= Preset->Data.MaskMode;
+		StencilIndex			= Preset->Data.StencilIndex;
+		bUseAngularVelocity		= Preset->Data.bUseAngularVelocity;
+		AngularStrength			= Preset->Data.AngularStrength;
+		AngularMin				= Preset->Data.AngularMin;
+		AngularMax				= Preset->Data.AngularMax;
+		AngularSmoothing		= Preset->Data.AngularSmoothing;
+		bUseVelocity			= Preset->Data.bUseVelocity;
+		VelocityStrength		= Preset->Data.VelocityStrength;
+		VelocityMin				= Preset->Data.VelocityMin;
+		VelocityMax				= Preset->Data.VelocityMax;
+		VelocitySmoothing		= Preset->Data.VelocitySmoothing;
+		bUseAcceleration		= Preset->Data.bUseAcceleration;
+		AccelerationStrength	= Preset->Data.AccelerationStrength;
+		AccelerationMin			= Preset->Data.AccelerationMin;
+		AccelerationMax			= Preset->Data.AccelerationMax;
+		AccelerationSmoothing	= Preset->Data.AccelerationSmoothing;
 	}	
 }
 
@@ -454,6 +454,7 @@ void UVRTunnellingPro::FViewExtension::PreRenderViewFamily_RenderThread(FRHIComm
 	{
 		return;
 	}
+
 	FTransform NewTransform;
 	
 	{
@@ -491,6 +492,7 @@ void UVRTunnellingPro::FViewExtension::PreRenderViewFamily_RenderThread(FRHIComm
 		NewTransform = FTransform(Orientation, Position, MotionControllerComponent->RenderThreadComponentScale);
 		
 	} // Release the lock on the MotionControllerComponent
+
 }
 
 void UVRTunnellingPro::FViewExtension::PostRenderViewFamily_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneViewFamily& InViewFamily)
@@ -552,7 +554,6 @@ void UVRTunnellingPro::InitCapture()
 	UCameraComponent* PlayerCamera = GetOwner()->FindComponentByClass<UCameraComponent>();
 	if (PlayerCamera != NULL)
 	{
-		
 		IXRTrackingSystem* TrackingSys = GEngine->XRSystem.Get();
 		if (TrackingSys)
 		{
@@ -561,7 +562,6 @@ void UVRTunnellingPro::InitCapture()
 			UpdatePostProcessSettings();
 			IHeadMountedDisplay* HMD = GEngine->XRSystem->GetHMDDevice();
 			HMD->GetFieldOfView(HFov, VFov);
-
 			SceneCaptureCube->AttachToComponent(PlayerCamera, FAttachmentTransformRules::KeepRelativeTransform);
 			PostProcessMID->SetTextureParameterValue(FName("TC"), TC);
 		}
@@ -614,6 +614,7 @@ void UVRTunnellingPro::ApplyBackgroundMode()
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 1.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 0.0f);
+
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(true);
 			break;
 
@@ -621,9 +622,19 @@ void UVRTunnellingPro::ApplyBackgroundMode()
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 1.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundBlur"), 0.0f);
+
+			if (CubeMapOverride != NULL)
+			{
+				PostProcessMID->SetScalarParameterValue(FName("CubeMapOverride"), 1.0f);
+				PostProcessMID->SetTextureParameterValue(FName("CustomCubeMap"), CubeMapOverride);
+			}
+			else
+			{
+				PostProcessMID->SetScalarParameterValue(FName("CubeMapOverride"), 0.0f);
+			}
 			if (Skybox != NULL) Skybox->SetActorHiddenInGame(false);
 			break;
-		
+	
 		case EVRTPBackgroundMode::MM_BLUR:
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundColor"), 0.0f);
 			PostProcessMID->SetScalarParameterValue(FName("BackgroundSkybox"), 0.0f);

@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/ObjectMacros.h"
+#include "Engine/TextureCube.h"
 #include "Components/PrimitiveComponent.h"
 #include "SceneViewExtension.h"
 #include "IMotionController.h"
@@ -34,15 +35,18 @@ USTRUCT(BlueprintType)
 struct FVRTPPreset
 {
 	GENERATED_USTRUCT_BODY()
-	
+
 	//Skybox Blueprint to use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
 	TSubclassOf<class AActor> SkyboxBlueprint;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
+	UTextureCube* CubeMapOverride;
+
 	//Post Process Material to use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Post Process")
 	UMaterial* PostProcessMaterial;
-
+	
 	//Effect Vignette Color
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
 	FLinearColor EffectColor;
@@ -139,6 +143,7 @@ struct FVRTPPreset
 	FVRTPPreset()
 	{
 		SkyboxBlueprint = NULL;
+		CubeMapOverride = NULL;
 		PostProcessMaterial = NULL;
 		EffectColor = FLinearColor::Black;
 		EffectCoverage = 0;
@@ -240,6 +245,12 @@ class UVRTunnellingPro : public UPrimitiveComponent
 	TSubclassOf<class AActor> SkyboxBlueprint;
 	UPROPERTY(EditAnywhere)
 	TSubclassOf<class AActor> SkyboxBlueprintSwap;
+
+	//Cube Map texture to use to override skybox capture
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "VR Tunnelling")
+	UTextureCube* CubeMapOverride;
+	UPROPERTY(EditAnywhere)
+	UTextureCube* CubeMapOverrideSwap;
 
 	//Post Process Material to use
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "VR Tunnelling")
@@ -444,11 +455,11 @@ protected:
 
 	/** Blueprint Implementable function for reponding to updated data from a motion controller (so we can use custom paramater values from it) */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Motion Controller Update")
-	void OnMotionControllerUpdated();
+		void OnMotionControllerUpdated();
 
 	// Returns the value of a custom parameter on the current in use Motion Controller (see member InUseMotionController). Only valid for the duration of OnMotionControllerUpdated 
 	UFUNCTION(BlueprintCallable, Category = "Motion Controller Update")
-	float GetParameterValue(FName InName, bool& bValueFound);
+		float GetParameterValue(FName InName, bool& bValueFound);
 
 private:
 
