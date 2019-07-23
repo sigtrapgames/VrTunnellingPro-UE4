@@ -1,11 +1,10 @@
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "VRTPMask.generated.h"
 
-
+/// Mask Component for both desktop and mobile applications. Used to add parent actor to the stencil buffer
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class UVRTPMask : public UActorComponent
 {

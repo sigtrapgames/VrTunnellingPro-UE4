@@ -6,3 +6,11 @@ Binaries/
 VRTPUE.sln
 VRTPUE.VC.db
 VRTPUE.VC.VC.opendb
+
+
+
+
+v0.2.0-422
+v0.2.0 Unreal Engine 4.22
+
+Includes pre-built plugin binaries for Unreal Engine 4.22. This includes the VRTP mobile component, compatible with Oculus Quest.
