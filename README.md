@@ -5,6 +5,9 @@ VR Tunnelling Pro (VRTP) is the most advanced VR comfort solution for Unreal Eng
 VRTP is designed not only as a plugin, but a platform for experimenting with and developing new comfort techniques. Familiarity with the source will allow developers to quickly implement new techniques.
 
 ## Quick Installation & Usage
+To use the project without Visual Studio installed (pre-compiled C++ project, complete with binaries and intermediate folders):
+* Download [here](https://drive.google.com/open?id=1dHePgBieK9IGHRBB3Q35atPh0Zo04du3), unzip and run the .uproject file. Note that this is compiled with UE4.22 for Windows 64-bit only.
+
 To use the plugin within your project:
 * Go to [Releases](https://github.com/sigtrapgames/VrTunnellingPro-UE4/releases) to download the plugin for your Unreal Engine version
 * Copy the plugin folder either to your project's /plugins folder
