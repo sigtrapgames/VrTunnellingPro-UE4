@@ -817,13 +817,14 @@ void UVRTunnellingPro::CalculateMotion(float DeltaTime)
 			PostProcessMID->SetScalarParameterValue(FName("YShift"), 0.0f);
 			UCameraComponent* PlayerCamera = GetOwner()->FindComponentByClass<UCameraComponent>();
 			if (PlayerCamera != NULL) {
-				FVector actorRight = GetOwner()->GetActorRightVector();
+				FVector cameraRight = PlayerCamera->GetRightVector();
 				velocityVector.Normalize();
-				FVector rightVelocity = velocityVector.ProjectOnTo(actorRight);
+				FVector rightVelocity = velocityVector.ProjectOnTo(cameraRight);
+				float strafeFactor = FVector::DotProduct(rightVelocity, cameraRight);
 				FVector cameraForward = PlayerCamera->GetForwardVector();
 				cameraForward.Normalize();
 				PostProcessMID->SetScalarParameterValue(FName("YShift"), cameraForward.Z * ((1.5f - Radius) / 1.5f) * DirectionalVerticalStrength);
-				PostProcessMID->SetScalarParameterValue(FName("XShift"), rightVelocity.X * DirectionalHorizontalStrength);
+				PostProcessMID->SetScalarParameterValue(FName("XShift"), strafeFactor * DirectionalHorizontalStrength);
 			}
 		} else {
 			PostProcessMID->SetScalarParameterValue(FName("XShift"), 0.0f);
