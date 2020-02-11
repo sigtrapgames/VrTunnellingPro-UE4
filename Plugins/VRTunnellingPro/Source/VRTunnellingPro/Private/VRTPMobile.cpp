@@ -242,7 +242,7 @@ void UVRTunnellingProMobile::InitCapture()
 	SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
 
 	SceneCaptureCube->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureCube->ShowFlags.SetAtmosphericFog(false);
+	SceneCaptureCube->ShowFlags.SetAtmosphere(false);
 	SceneCaptureCube->ShowFlags.SetBloom(false);
 	SceneCaptureCube->ShowFlags.SetBSP(false);
 	SceneCaptureCube->ShowFlags.SetDeferredLighting(false);

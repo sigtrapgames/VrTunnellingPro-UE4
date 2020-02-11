@@ -114,6 +114,9 @@ void UVRTunnellingPro::CacheSettings()
 	ForceEffectSwap = ForceEffect;
 	MaskModeSwap = MaskMode;
 	StencilIndexSwap = StencilIndex;
+	bDirectionSpecificSwap = bDirectionSpecific;
+	DirectionalVerticalStrengthSwap = DirectionalVerticalStrength;
+	DirectionalHorizontalStrengthSwap = DirectionalHorizontalStrength;
 	bUseAngularVelocitySwap = bUseAngularVelocity;
 	AngularStrengthSwap = AngularStrength;
 	AngularMinSwap = AngularMin;
@@ -153,6 +156,9 @@ void UVRTunnellingPro::InitFromPreset()
 		MaskMode				= MaskModeSwap;
 		StencilIndex			= StencilIndexSwap;
 		bUseAngularVelocity		= bUseAngularVelocitySwap;
+		bDirectionSpecific	    = bDirectionSpecificSwap;
+		DirectionalVerticalStrength   = DirectionalVerticalStrengthSwap;
+		DirectionalHorizontalStrength = DirectionalHorizontalStrengthSwap;
 		AngularStrength			= AngularStrengthSwap;
 		AngularMin				= AngularMinSwap;
 		AngularMax				= AngularMaxSwap;
@@ -186,6 +192,9 @@ void UVRTunnellingPro::SetPresetData(UVRTPPresetData* NewPreset)
 		ForceEffect				= Preset->Data.ForceEffect;
 		MaskMode				= Preset->Data.MaskMode;
 		StencilIndex			= Preset->Data.StencilIndex;
+		bDirectionSpecific      = Preset->Data.bDirectionSpecific;
+		DirectionalVerticalStrength   = Preset->Data.DirectionalVerticalStrength;
+		DirectionalHorizontalStrength = Preset->Data.DirectionalHorizontalStrength;
 		bUseAngularVelocity		= Preset->Data.bUseAngularVelocity;
 		AngularStrength			= Preset->Data.AngularStrength;
 		AngularMin				= Preset->Data.AngularMin;
@@ -504,7 +513,7 @@ void UVRTunnellingPro::FViewExtension::PostRenderViewFamily_RenderThread(FRHICom
 		return;
 	}
 
-	LateUpdate.PostRender_RenderThread();
+	// LateUpdate.PostRender_RenderThread(); // not required in 4.24
 }
 
 bool UVRTunnellingPro::FViewExtension::IsActiveThisFrame(class FViewport* InViewport) const
@@ -543,7 +552,7 @@ void UVRTunnellingPro::InitCapture()
 	SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
 
 	SceneCaptureCube->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureCube->ShowFlags.SetAtmosphericFog(false);
+	SceneCaptureCube->ShowFlags.SetAtmosphere(false);
 	SceneCaptureCube->ShowFlags.SetBloom(false);
 	SceneCaptureCube->ShowFlags.SetBSP(false);
 	SceneCaptureCube->ShowFlags.SetDeferredLighting(false);
@@ -736,6 +745,7 @@ void UVRTunnellingPro::CalculateMotion(float DeltaTime)
 	float Radius = 0;
 	float RadiusTarget = 0;
 	float VelocityFinal = 0;
+	FVector velocityVector = GetOwner()->GetActorLocation() - LastPosition;
 	if (PostProcessMID != NULL)
 	{
 		if (!ForceEffect)
@@ -802,5 +812,23 @@ void UVRTunnellingPro::CalculateMotion(float DeltaTime)
 		}
 
 		PostProcessMID->SetScalarParameterValue(FName("Radius"), Radius);
+		if (bDirectionSpecific) {
+			PostProcessMID->SetScalarParameterValue(FName("XShift"), 0.0f);
+			PostProcessMID->SetScalarParameterValue(FName("YShift"), 0.0f);
+			UCameraComponent* PlayerCamera = GetOwner()->FindComponentByClass<UCameraComponent>();
+			if (PlayerCamera != NULL) {
+				FVector cameraRight = PlayerCamera->GetRightVector();
+				velocityVector.Normalize();
+				FVector rightVelocity = velocityVector.ProjectOnTo(cameraRight);
+				float strafeFactor = FVector::DotProduct(rightVelocity, cameraRight);
+				FVector cameraForward = PlayerCamera->GetForwardVector();
+				cameraForward.Normalize();
+				PostProcessMID->SetScalarParameterValue(FName("YShift"), cameraForward.Z * ((1.5f - Radius) / 1.5f) * DirectionalVerticalStrength);
+				PostProcessMID->SetScalarParameterValue(FName("XShift"), strafeFactor * DirectionalHorizontalStrength);
+			}
+		} else {
+			PostProcessMID->SetScalarParameterValue(FName("XShift"), 0.0f);
+			PostProcessMID->SetScalarParameterValue(FName("YShift"), 0.0f);
+		}
 	}
 }
