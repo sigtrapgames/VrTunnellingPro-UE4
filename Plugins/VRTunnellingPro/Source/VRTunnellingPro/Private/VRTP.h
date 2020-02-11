@@ -97,6 +97,18 @@ struct FVRTPPreset
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings|Mask Settings", meta = (ClampMin = "0", ClampMax = "255"))
 	int32 StencilIndex;
 
+	/// Enable direction-specific tunnelling
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Direction specific")
+	bool bDirectionSpecific;
+
+	/// Direction-specific tunnelling vertical strength
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Direction specific")
+	float DirectionalVerticalStrength;
+
+	/// Direction-specific tunnelling horizontal strength
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Direction specific")
+	float DirectionalHorizontalStrength;
+
 	//Enable Effect for Angular Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity")
 	bool bUseAngularVelocity;
@@ -175,6 +187,9 @@ struct FVRTPPreset
 		ForceEffect = false;
 		MaskMode = EVRTPMaskMode::MM_OFF;
 		StencilIndex = 200;
+		bDirectionSpecific = false;
+		DirectionalVerticalStrength = 1.5f;
+		DirectionalHorizontalStrength = 1.5f;
 		bUseAngularVelocity = false;
 		AngularStrength = 0;
 		AngularMin = 0;
@@ -337,6 +352,24 @@ class UVRTunnellingPro : public UPrimitiveComponent
 	UPROPERTY(EditAnywhere)
 	int32 StencilIndexSwap;
 
+	//Enable directional-specific tunnelling
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SimpleDisplay, Category = "VR Tunnelling|Motion Settings|Direction Specific")
+	bool bDirectionSpecific;
+	UPROPERTY(EditAnywhere)
+	bool bDirectionSpecificSwap;
+
+	//Direction-specific tunnelling vertical strength
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SimpleDisplay, Category = "VR Tunnelling|Motion Settings|Direction Specific")
+	float DirectionalVerticalStrength;
+	UPROPERTY(EditAnywhere)
+	float DirectionalVerticalStrengthSwap;
+
+	//Direction-specific tunnelling horizontal strength
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, SimpleDisplay, Category = "VR Tunnelling|Motion Settings|Direction Specific")
+	float DirectionalHorizontalStrength;
+	UPROPERTY(EditAnywhere)
+	float DirectionalHorizontalStrengthSwap;
+
 	//Enable Effect for Angular Velocity
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, SimpleDisplay, Category = "VR Tunnelling|Motion Settings|Angular Velocity")
 	bool bUseAngularVelocity;
@@ -494,7 +527,7 @@ protected:
 	// Cached Motion Controller that can be read by GetParameterValue. Only valid for the duration of OnMotionControllerUpdated
 	IMotionController* InUseMotionController;
 
-	/** Blueprint Implementable function for reponding to updated data from a motion controller (so we can use custom paramater values from it) */
+	/** Blueprint Implementable function for responding to updated data from a motion controller (so we can use custom paramater values from it) */
 	UFUNCTION(BlueprintImplementableEvent, Category = "Motion Controller Update")
 		void OnMotionControllerUpdated();
 

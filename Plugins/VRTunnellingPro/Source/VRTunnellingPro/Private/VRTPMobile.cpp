@@ -242,7 +242,7 @@ void UVRTunnellingProMobile::InitCapture()
 	SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
 
 	SceneCaptureCube->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureCube->ShowFlags.SetAtmosphericFog(false);
+	SceneCaptureCube->ShowFlags.SetAtmosphere(false);
 	SceneCaptureCube->ShowFlags.SetBloom(false);
 	SceneCaptureCube->ShowFlags.SetBSP(false);
 	SceneCaptureCube->ShowFlags.SetDeferredLighting(false);
@@ -274,7 +274,7 @@ void UVRTunnellingProMobile::InitSkybox()
 		if (Skybox != NULL)
 		{
 			Skybox->GetRootComponent()->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			TArray<UActorComponent*> MeshComponents = Skybox->GetComponentsByClass(UStaticMeshComponent::StaticClass());
+			TInlineComponentArray<UActorComponent*> MeshComponents(Skybox);
 			for (int32 i = 0; i < MeshComponents.Num(); ++i)
 			{
 				UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(MeshComponents[i]);
@@ -447,7 +447,7 @@ void UVRTunnellingProMobile::ApplyStencilMasks()
 	{
 		if (Actor->FindComponentByClass(UVRTPMask::StaticClass()))
 		{
-			TArray<UActorComponent*> Components = Actor->GetComponentsByClass(UPrimitiveComponent::StaticClass());
+			TInlineComponentArray<UActorComponent*> Components(Actor);
 			for (UActorComponent* Component : Components)
 			{
 				UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component);

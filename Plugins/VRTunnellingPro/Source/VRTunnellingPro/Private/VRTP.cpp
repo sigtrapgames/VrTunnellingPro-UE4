@@ -124,6 +124,9 @@ void UVRTunnellingPro::CacheSettings()
 	ForceEffectSwap = ForceEffect;
 	MaskModeSwap = MaskMode;
 	StencilIndexSwap = StencilIndex;
+	bDirectionSpecificSwap = bDirectionSpecific;
+	DirectionalVerticalStrengthSwap = DirectionalVerticalStrength;
+	DirectionalHorizontalStrengthSwap = DirectionalHorizontalStrength;
 	bUseAngularVelocitySwap = bUseAngularVelocity;
 	AngularStrengthSwap = AngularStrength;
 	AngularMinSwap = AngularMin;
@@ -156,32 +159,35 @@ void UVRTunnellingPro::InitFromPreset()
 		/*
 		CageBlueprint			= CageBlueprintSwap;
 		*/
-		SkyboxBlueprint			= SkyboxBlueprintSwap;
-		CubeMapOverride			= CubeMapOverrideSwap;
-		PostProcessMaterial		= PostProcessMaterialSwap;
-		EffectColor				= EffectColorSwap;
-		EffectCoverage			= EffectCoverageSwap;
-		EffectFeather			= EffectFeatherSwap;
-		BackgroundMode			= BackgroundModeSwap;
-		ApplyEffectColor		= ApplyEffectColorSwap;
-		ForceEffect				= ForceEffectSwap;
-		MaskMode				= MaskModeSwap;
-		StencilIndex			= StencilIndexSwap;
-		bUseAngularVelocity		= bUseAngularVelocitySwap;
-		AngularStrength			= AngularStrengthSwap;
-		AngularMin				= AngularMinSwap;
-		AngularMax				= AngularMaxSwap;
-		AngularSmoothing		= AngularSmoothingSwap;
-		bUseVelocity			= bUseVelocitySwap;
-		VelocityStrength		= VelocityStrengthSwap;
-		VelocityMin				= VelocityMinSwap;
-		VelocityMax				= VelocityMaxSwap;
-		VelocitySmoothing		= VelocitySmoothingSwap;
-		bUseAcceleration		= bUseAccelerationSwap;
-		AccelerationStrength	= AccelerationStrengthSwap;
-		AccelerationMin			= AccelerationMinSwap;
-		AccelerationMax			= AccelerationMaxSwap;
-		AccelerationSmoothing	= AccelerationSmoothingSwap;
+		SkyboxBlueprint					= SkyboxBlueprintSwap;
+		CubeMapOverride					= CubeMapOverrideSwap;
+		PostProcessMaterial				= PostProcessMaterialSwap;
+		EffectColor						= EffectColorSwap;
+		EffectCoverage					= EffectCoverageSwap;
+		EffectFeather					= EffectFeatherSwap;
+		BackgroundMode					= BackgroundModeSwap;
+		ApplyEffectColor				= ApplyEffectColorSwap;
+		ForceEffect						= ForceEffectSwap;
+		MaskMode						= MaskModeSwap;
+		StencilIndex					= StencilIndexSwap;
+		bUseAngularVelocity				= bUseAngularVelocitySwap;
+		bDirectionSpecific				= bDirectionSpecificSwap;
+		DirectionalVerticalStrength		= DirectionalVerticalStrengthSwap;
+		DirectionalHorizontalStrength	= DirectionalHorizontalStrengthSwap;
+		AngularStrength					= AngularStrengthSwap;
+		AngularMin						= AngularMinSwap;
+		AngularMax						= AngularMaxSwap;
+		AngularSmoothing				= AngularSmoothingSwap;
+		bUseVelocity					= bUseVelocitySwap;
+		VelocityStrength				= VelocityStrengthSwap;
+		VelocityMin						= VelocityMinSwap;
+		VelocityMax						= VelocityMaxSwap;
+		VelocitySmoothing				= VelocitySmoothingSwap;
+		bUseAcceleration				= bUseAccelerationSwap;
+		AccelerationStrength			= AccelerationStrengthSwap;
+		AccelerationMin					= AccelerationMinSwap;
+		AccelerationMax					= AccelerationMaxSwap;
+		AccelerationSmoothing			= AccelerationSmoothingSwap;
 	}
 }
 
@@ -273,7 +279,7 @@ void UVRTunnellingPro::TickComponent(float DeltaTime, enum ELevelTick TickType, 
 		InitSkybox();
 	}
 
-	if (bIsActive)
+	if (IsActive())
 	{
 		FVector Position;
 		FRotator Orientation;
@@ -405,7 +411,7 @@ bool UVRTunnellingPro::PollControllerState(FVector& Position, FRotator& Orientat
 		// Cache state from the game thread for use on the render thread
 		const AActor* MyOwner = GetOwner();
 		const APawn* MyPawn = Cast<APawn>(MyOwner);
-		bHasAuthority = MyPawn ? MyPawn->IsLocallyControlled() : (MyOwner->Role == ENetRole::ROLE_Authority);
+		bHasAuthority = MyPawn ? MyPawn->IsLocallyControlled() : (MyOwner->GetLocalRole() == ENetRole::ROLE_Authority);
 	}
 
 	if (bHasAuthority)
@@ -539,7 +545,7 @@ void UVRTunnellingPro::FViewExtension::PostRenderViewFamily_RenderThread(FRHICom
 		return;
 	}
 
-	LateUpdate.PostRender_RenderThread();
+	//LateUpdate.PostRender_RenderThread(); // Not required in 4.24
 }
 
 bool UVRTunnellingPro::FViewExtension::IsActiveThisFrame(class FViewport* InViewport) const
@@ -612,7 +618,7 @@ void UVRTunnellingPro::InitCapture()
 	SceneCaptureRight->RegisterComponent();
 
 	SceneCaptureLeft->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureLeft->ShowFlags.SetAtmosphericFog(false);
+	SceneCaptureLeft->ShowFlags.SetAtmosphere(false);
 	SceneCaptureLeft->ShowFlags.SetBloom(false);
 	SceneCaptureLeft->ShowFlags.SetBSP(false);
 	SceneCaptureLeft->ShowFlags.SetDeferredLighting(false);
@@ -621,7 +627,7 @@ void UVRTunnellingPro::InitCapture()
 	SceneCaptureLeft->ShowFlags.SetVolumetricFog(false);
 
 	SceneCaptureRight->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureRight->ShowFlags.SetAtmosphericFog(false);
+	SceneCaptureRight->ShowFlags.SetAtmosphere(false);
 	SceneCaptureRight->ShowFlags.SetBloom(false);
 	SceneCaptureRight->ShowFlags.SetBSP(false);
 	SceneCaptureRight->ShowFlags.SetDeferredLighting(false);
@@ -645,7 +651,7 @@ void UVRTunnellingPro::InitCapture()
 	SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
 
 	SceneCaptureCube->ShowFlags.SetAntiAliasing(false);
-	SceneCaptureCube->ShowFlags.SetAtmosphericFog(false);
+	SceneCaptureCube->ShowFlags.SetAtmosphere(false);
 	SceneCaptureCube->ShowFlags.SetBloom(false);
 	SceneCaptureCube->ShowFlags.SetBSP(false);
 	SceneCaptureCube->ShowFlags.SetDeferredLighting(false);
@@ -772,7 +778,8 @@ void UVRTunnellingPro::InitSkybox()
 		if (Skybox != NULL)
 		{
 			Skybox->GetRootComponent()->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			TArray<UActorComponent*> MeshComponents = Skybox->GetComponentsByClass(UStaticMeshComponent::StaticClass());
+			TInlineComponentArray<UActorComponent*> MeshComponents(Skybox);
+			
 			for (int32 i = 0; i < MeshComponents.Num(); ++i)
 			{
 				UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(MeshComponents[i]);
@@ -927,7 +934,7 @@ void UVRTunnellingPro::ApplyStencilMasks()
 	{
 		if (Actor->FindComponentByClass(UVRTPMask::StaticClass()))
 		{
-			TArray<UActorComponent*> Components = Actor->GetComponentsByClass(UPrimitiveComponent::StaticClass());
+			TInlineComponentArray<UActorComponent*> Components(Actor);
 			for (UActorComponent* Component : Components)
 			{
 				UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component);
@@ -956,6 +963,7 @@ void UVRTunnellingPro::CalculateMotion(float DeltaTime)
 	float Radius = 0;
 	float RadiusTarget = 0;
 	float VelocityFinal = 0;
+	FVector velocityVector = GetOwner()->GetActorLocation() - LastPosition;	
 	if (PostProcessMID != NULL)
 	{
 		if (!ForceEffect)
@@ -1022,5 +1030,24 @@ void UVRTunnellingPro::CalculateMotion(float DeltaTime)
 		}
 
 		PostProcessMID->SetScalarParameterValue(FName("Radius"), Radius);
+		if (bDirectionSpecific) {
+			PostProcessMID->SetScalarParameterValue(FName("XShift"), 0.0f);
+			PostProcessMID->SetScalarParameterValue(FName("YShift"), 0.0f);
+			UCameraComponent* PlayerCamera = GetOwner()->FindComponentByClass<UCameraComponent>();
+			if (PlayerCamera != NULL) {
+				FVector cameraRight = PlayerCamera->GetRightVector();
+				velocityVector.Normalize();
+				FVector rightVelocity = velocityVector.ProjectOnTo(cameraRight);
+				float strafeFactor = FVector::DotProduct(rightVelocity, cameraRight);
+				FVector cameraForward = PlayerCamera->GetForwardVector();
+				cameraForward.Normalize();
+				PostProcessMID->SetScalarParameterValue(FName("YShift"), cameraForward.Z * ((1.5f - Radius) / 1.5f) * DirectionalVerticalStrength);
+				PostProcessMID->SetScalarParameterValue(FName("XShift"), strafeFactor * DirectionalHorizontalStrength);
+			}
+		}
+		else {
+			PostProcessMID->SetScalarParameterValue(FName("XShift"), 0.0f);
+			PostProcessMID->SetScalarParameterValue(FName("YShift"), 0.0f);
+		}
 	}
 }
