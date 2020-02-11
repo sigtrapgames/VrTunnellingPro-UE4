@@ -37,6 +37,9 @@ Drive the effect using speed. Constant speed generally does not contribute heavi
 ### Acceleration
 Drive the effect using acceleration. Changing speed and direction contributes to sim-sickness in many users, but less so than angular velocity.
 
+### Direction Specific
+It is possible to enable and apply direction-specific strength to the effect from the player velocity, allowing you to drive the effect with horizontal or vertical strafing.
+
 \page effect Effect Settings
 <div class="boxout">
     ![Effect settings](../img/effectSettings.png)

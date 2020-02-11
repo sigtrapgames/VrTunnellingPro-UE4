@@ -144,7 +144,7 @@ struct FVRTPMPreset
 	FVRTPMPreset()
 	{
 		SkyboxBlueprint = NULL;
-		CubeMapOverride = false;
+		CubeMapOverride = NULL;
 		PostProcessMaterial = NULL;
 		IrisMesh = NULL;
 		EffectColor = FLinearColor::Black;

@@ -17,6 +17,7 @@
 #include "UObject/UObjectGlobals.h" // for FindObject<>
 #include "XRMotionControllerBase.h"
 #include "IXRTrackingSystem.h"
+#include "XRTrackingSystemBase.h"
 
 //******************************************************
 #include "Components/ActorComponent.h"

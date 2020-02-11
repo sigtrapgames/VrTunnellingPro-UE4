@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "4.24.0.0.0",
+	"VersionName": "4.24.2.0.0",
 	"FriendlyName": "VRTunnellingPro",
 	"Description": "VR Tunnelling Pro for UE4",
 	"Category": "Virtual Reality",
@@ -10,7 +10,7 @@
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"EngineVersion": "4.24.0",
+	"EngineVersion": "4.24",
 	"IsBetaVersion" : false,
 	"CanContainContent": true,
 	"Installed": false,
@@ -24,7 +24,9 @@
 				"Win32",
 				"Mac",
 				"Android",
-				"IOS"
+				"IOS",
+				"PS4",
+				"XBoxOne"
 			]
 		}
 	]
