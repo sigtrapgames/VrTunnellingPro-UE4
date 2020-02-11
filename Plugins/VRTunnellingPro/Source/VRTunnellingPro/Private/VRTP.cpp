@@ -264,7 +264,7 @@ void UVRTunnellingPro::TickComponent(float DeltaTime, enum ELevelTick TickType, 
 		InitSkybox();
 	}
 
-	if (bIsActive)
+	if (IsActive())
 	{
 		FVector Position;
 		FRotator Orientation;
@@ -396,7 +396,7 @@ bool UVRTunnellingPro::PollControllerState(FVector& Position, FRotator& Orientat
 		// Cache state from the game thread for use on the render thread
 		const AActor* MyOwner = GetOwner();
 		const APawn* MyPawn = Cast<APawn>(MyOwner);
-		bHasAuthority = MyPawn ? MyPawn->IsLocallyControlled() : (MyOwner->Role == ENetRole::ROLE_Authority);
+		bHasAuthority = MyPawn ? MyPawn->IsLocallyControlled() : (MyOwner->GetLocalRole() == ENetRole::ROLE_Authority);
 	}
 
 	if (bHasAuthority)
@@ -591,7 +591,7 @@ void UVRTunnellingPro::InitSkybox()
 		if (Skybox != NULL)
 		{
 			Skybox->GetRootComponent()->AttachToComponent(GetOwner()->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
-			TArray<UActorComponent*> MeshComponents = Skybox->GetComponentsByClass(UStaticMeshComponent::StaticClass());
+				TInlineComponentArray<UActorComponent*> MeshComponents(Skybox);
 			for (int32 i = 0; i < MeshComponents.Num(); ++i)
 			{
 				UStaticMeshComponent* Mesh = Cast<UStaticMeshComponent>(MeshComponents[i]);
@@ -717,7 +717,7 @@ void UVRTunnellingPro::ApplyStencilMasks()
 	{
 		if (Actor->FindComponentByClass(UVRTPMask::StaticClass()))
 		{
-			TArray<UActorComponent*> Components = Actor->GetComponentsByClass(UPrimitiveComponent::StaticClass());
+			TInlineComponentArray<UActorComponent*> Components(Actor);
 			for (UActorComponent* Component : Components)
 			{
 				UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component);
