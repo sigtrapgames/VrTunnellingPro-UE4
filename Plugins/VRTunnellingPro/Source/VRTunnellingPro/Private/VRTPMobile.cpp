@@ -1,4 +1,4 @@
-
+// Copyright 2021 Darby Costello. All Rights Reserved.
 #include "VRTPMobile.h"
 #include "Engine/Engine.h"
 #include "Camera/CameraComponent.h"
@@ -162,7 +162,6 @@ void UVRTunnellingProMobile::BeginPlay()
 	CaptureInit = false;
 }
 
-
 // Called every frame
 void UVRTunnellingProMobile::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -203,7 +202,7 @@ void UVRTunnellingProMobile::TickComponent(float DeltaTime, ELevelTick TickType,
 
 #if WITH_EDITOR
 //=============================================================================
-void UVRTunnellingProMobile::PreEditChange(UProperty* PropertyAboutToChange)
+void UVRTunnellingProMobile::PreEditChange(FProperty* PropertyAboutToChange)
 {
 	Super::PreEditChange(PropertyAboutToChange);
 }
@@ -211,7 +210,7 @@ void UVRTunnellingProMobile::PreEditChange(UProperty* PropertyAboutToChange)
 //=============================================================================
 void UVRTunnellingProMobile::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UProperty* PropertyThatChanged = PropertyChangedEvent.Property;
+	FProperty* PropertyThatChanged = PropertyChangedEvent.Property;
 	const FName PropertyName = (PropertyThatChanged != nullptr) ? PropertyThatChanged->GetFName() : NAME_None;
 
 	if (PropertyThatChanged->GetFName().ToString() == "Preset" || PropertyThatChanged->GetFName().ToString() == "bEnablePreset")

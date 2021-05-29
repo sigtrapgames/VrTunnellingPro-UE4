@@ -1,4 +1,4 @@
-
+// Copyright 2021 Darby Costello. All Rights Reserved.
 #include "VRTP.h"
 #include "GameFramework/Pawn.h"
 #include "PrimitiveSceneProxy.h"
@@ -238,12 +238,6 @@ void UVRTunnellingPro::ApplyPreset(UVRTPPresetData* NewPreset)
 	}
 }
 
-void UVRTunnellingPro::CreateRenderState_Concurrent()
-{
-	Super::CreateRenderState_Concurrent();
-	RenderThreadRelativeTransform = GetRelativeTransform();
-	RenderThreadComponentScale = GetComponentScale();
-}
 
 void UVRTunnellingPro::SendRenderTransform_Concurrent()
 {
@@ -353,7 +347,7 @@ void UVRTunnellingPro::Serialize(FArchive& Ar)
 
 #if WITH_EDITOR
 //=============================================================================
-void UVRTunnellingPro::PreEditChange(UProperty* PropertyAboutToChange)
+void UVRTunnellingPro::PreEditChange(FProperty* PropertyAboutToChange)
 {
 	Super::PreEditChange(PropertyAboutToChange);
 }
@@ -361,7 +355,7 @@ void UVRTunnellingPro::PreEditChange(UProperty* PropertyAboutToChange)
 //=============================================================================
 void UVRTunnellingPro::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
 {
-	UProperty* PropertyThatChanged = PropertyChangedEvent.Property;
+	FProperty* PropertyThatChanged = PropertyChangedEvent.Property;
 	const FName PropertyName = (PropertyThatChanged != nullptr) ? PropertyThatChanged->GetFName() : NAME_None;
 	
 	if (PropertyThatChanged->GetFName().ToString() == "Preset" || PropertyThatChanged->GetFName().ToString() == "bEnablePreset")
