@@ -15,7 +15,6 @@ public class VRTunnellingPro : ModuleRules
 		
 		PrivateIncludePaths.AddRange(
 			new string[] {
-				"VRTunnellingPro/Private"
 			}
 			);
 			
@@ -31,14 +30,14 @@ public class VRTunnellingPro : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-				"Core",
 				"CoreUObject",
                 "Engine",
                 "HeadMountedDisplay",
 				"InputCore", 
 				"RHI", 
-				"RenderCore"
-			}
+				"RenderCore",
+                "XRBase"
+            }
 			);
 		
 		

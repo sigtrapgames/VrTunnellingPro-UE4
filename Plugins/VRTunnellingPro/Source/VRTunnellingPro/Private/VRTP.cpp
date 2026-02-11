@@ -54,7 +54,7 @@ namespace LegacyMotionSources
 {
 	static bool GetSourceNameForHand(EControllerHand InHand, FName& OutSourceName)
 	{
-		UEnum* HandEnum = FindObject<UEnum>(ANY_PACKAGE, TEXT("EControllerHand"));
+		UEnum* HandEnum = StaticEnum<EControllerHand>();
 		if (HandEnum)
 		{
 			FString ValueName = HandEnum->GetNameStringByValue((int64)InHand);
@@ -90,6 +90,7 @@ UVRTunnellingPro::UVRTunnellingPro(const FObjectInitializer& ObjectInitializer)
 //=============================================================================
 void UVRTunnellingPro::BeginDestroy()
 {
+	ReleaseCaptureResources();
 	Super::BeginDestroy();
 	if (ViewExtension.IsValid())
 	{
@@ -100,6 +101,12 @@ void UVRTunnellingPro::BeginDestroy()
 
 		ViewExtension.Reset();
 	}
+}
+
+void UVRTunnellingPro::OnUnregister()
+{
+	ShutdownCaptureAndSkybox();
+	Super::OnUnregister();
 }
 
 void UVRTunnellingPro::CacheSettings()
@@ -374,10 +381,26 @@ void UVRTunnellingPro::BeginPlay()
 	CaptureInit = false;
 }
 
+void UVRTunnellingPro::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	ReleaseCaptureResources();
+
+	if (ViewExtension.IsValid())
+	{
+		FScopeLock ScopeLock(&CritSect);
+		ViewExtension->MotionControllerComponent = nullptr;
+		ViewExtension.Reset();
+	}
+	ShutdownCaptureAndSkybox();
+
+	Super::EndPlay(EndPlayReason);
+}
+
 
 //=============================================================================
 void UVRTunnellingPro::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
+	ReleaseCaptureResources();
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
 
 }
@@ -511,11 +534,107 @@ void UVRTunnellingPro::FViewExtension::PostRenderViewFamily_RenderThread(FRHICom
 	// LateUpdate.PostRender_RenderThread(); // not required in 4.24
 }
 
-bool UVRTunnellingPro::FViewExtension::IsActiveThisFrame(class FViewport* InViewport) const
+void UVRTunnellingPro::ReleaseCaptureResources()
 {
-	check(IsInGameThread());
-	return MotionControllerComponent && !MotionControllerComponent->bDisableLowLatencyUpdate && CVarEnableMotionControllerLateUpdate.GetValueOnGameThread();
+	// Must be on game thread; scene components aren't safe to destroy on RT.
+	if (!IsInGameThread())
+	{
+		AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				ReleaseCaptureResources();
+			});
+		return;
+	}
+
+	// Destroy skybox actor if we spawned one
+	if (Skybox)
+	{
+		Skybox->Destroy();
+		Skybox = nullptr;
+	}
+
+	// Properly tear down the capture component first (this is the key)
+	if (SceneCaptureCube)
+	{
+		SceneCaptureCube->Deactivate();
+		SceneCaptureCube->TextureTarget = nullptr;
+
+		if (SceneCaptureCube->IsRegistered())
+		{
+			SceneCaptureCube->UnregisterComponent();
+		}
+
+		SceneCaptureCube->DestroyComponent();
+		SceneCaptureCube = nullptr;
+	}
+
+	// Release render target reference
+	if (TC)
+	{
+		TC->ReleaseResource();
+		TC = nullptr;
+	}
+	FlushRenderingCommands();
 }
+
+void UVRTunnellingPro::ShutdownCaptureAndSkybox()
+{
+	// Make teardown deterministic for PIE stop.
+	if (!IsInGameThread())
+	{
+		AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				ShutdownCaptureAndSkybox();
+			});
+		return;
+	}
+
+	// Kill the view extension early (BeginDestroy is too late for PIE-stop)
+	if (ViewExtension.IsValid())
+	{
+		FScopeLock ScopeLock(&CritSect);
+		ViewExtension->MotionControllerComponent = nullptr;
+		ViewExtension.Reset();
+	}
+
+	// Destroy skybox actor first (it may be referenced by ShowOnly lists)
+	if (Skybox)
+	{
+		Skybox->Destroy();
+		Skybox = nullptr;
+	}
+
+	// Tear down the capture component (this is usually what holds the ViewState)
+	if (SceneCaptureCube)
+	{
+		SceneCaptureCube->Deactivate();
+		SceneCaptureCube->TextureTarget = nullptr;
+
+		// UE5: ensure it doesn't try to keep rendering resources alive
+		SceneCaptureCube->bAlwaysPersistRenderingState = false;
+
+		if (SceneCaptureCube->IsRegistered())
+		{
+			SceneCaptureCube->UnregisterComponent();
+		}
+
+		SceneCaptureCube->DestroyComponent();
+		SceneCaptureCube = nullptr;
+	}
+
+	// Drop render target & force release on RT
+	if (TC)
+	{
+		TC->ReleaseResource();
+		TC = nullptr;
+	}
+
+	// Critical: make sure render-thread cleanup finishes before viewport teardown continues
+	FlushRenderingCommands();
+}
+
+
+
 
 float UVRTunnellingPro::GetParameterValue(FName InName, bool& bValueFound)
 {
@@ -534,6 +653,8 @@ void UVRTunnellingPro::InitCapture()
 {
 	// Initialise Cube Capture
 	SceneCaptureCube = NewObject<USceneCaptureComponentCube>(GetOwner());
+	SceneCaptureCube->RegisterComponentWithWorld(GetWorld());
+
 	
 	TC = NewObject<UTextureRenderTargetCube>();
 	TC->ClearColor = FLinearColor::Black;
@@ -544,7 +665,10 @@ void UVRTunnellingPro::InitCapture()
 	SceneCaptureCube->bCaptureOnMovement = false;
 	SceneCaptureCube->bCaptureEveryFrame = false;
 	SceneCaptureCube->bAutoActivate = true;
-	SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
+	SceneCaptureCube->bAlwaysPersistRenderingState = false; // <-- add this
+
+
+	//SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
 
 	SceneCaptureCube->ShowFlags.SetAntiAliasing(false);
 	SceneCaptureCube->ShowFlags.SetAtmosphere(false);

@@ -35,126 +35,182 @@ enum class EVRTPMaskMode : uint8
 };
 
 /// VRTP Preset Definition (Applied to desktop version only)
+/// This struct defines a *comfort preset* for VR Tunnelling Pro.
+/// Values are copied onto the component at runtime; this struct itself
+/// does NOT execute logic.
 USTRUCT(BlueprintType)
 struct FVRTPPreset
 {
 	GENERATED_USTRUCT_BODY()
 
-	/// Skybox blueprint to use
+	/* ================================
+	 * Capture / Background Setup
+	 * ================================ */
+
+	 /// Actor class used as the skybox when rendering peripheral background.
+	 /// Should be simple, unlit, and visually stable for comfort.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
 	TSubclassOf<class AActor> SkyboxBlueprint;
 
-	/// Cubemap texture cube to use as an override for skybox-only modes
+	/// Optional static cubemap used instead of live scene capture.
+	/// Cheaper and more stable than capturing the scene each time.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Capture")
 	UTextureCube* CubeMapOverride;
 
-	/// Effect material to use for post process effect
+	/* ================================
+	 * Post Process
+	 * ================================ */
+
+	 /// Post-process material that applies the tunnelling / vignette effect.
+	 /// Usually provided by the plugin; override only for custom visuals.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Post Process")
 	UMaterial* PostProcessMaterial;
-	
-	/// Effect vignette color
+
+	/* ================================
+	 * Effect Appearance
+	 * ================================ */
+
+	 /// Color of the vignette / tunnel edge.
+	 /// Black is strongest comfort; dark neutral colors feel softer.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
 	FLinearColor EffectColor;
 
-	/// Effect vignette coverage
+	/// Maximum vignette coverage (0–1).
+	/// Controls how far inward the tunnel can close at full strength.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float EffectCoverage;
 
-	/// Effect vignette feather
+	/// Softness of the tunnel edge.
+	/// Higher values = smoother, less distracting transitions.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings", meta = (ClampMin = "0.0", ClampMax = "10.0"))
 	float EffectFeather;
 
-	/// Effect background mode
+	/// Determines what fills the vignetted area:
+	/// solid color, skybox, cubemap, or captured scene.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
 	EVRTPBackgroundMode BackgroundMode;
 
-	/// Enable effect colour
+	/// Enables tinting the vignette using EffectColor.
+	/// If false, masking may still occur without color.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
 	bool ApplyEffectColor;
 
-	/// Force vignette effect (useful for debugging)
+	/// Forces the vignette to be visible at all times.
+	/// Useful for debugging or visual tuning.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings")
 	bool ForceEffect;
 
-	/// Effect mask mode
+	/* ================================
+	 * Mask / Stencil Settings
+	 * ================================ */
+
+	 /// Determines how the vignette mask is applied.
+	 /// May use stencil buffer or full-screen mask.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings|Mask Settings")
 	EVRTPMaskMode MaskMode;
 
-	/// Effect mask stencil index
+	/// Stencil index used when MaskMode relies on custom depth/stencil.
+	/// Must match the stencil value of the masked geometry.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Effect Settings|Mask Settings", meta = (ClampMin = "0", ClampMax = "255"))
 	int32 StencilIndex;
 
-	/// Enable direction-specific tunnelling
+	/* ================================
+	 * Direction-Specific Motion
+	 * ================================ */
+
+	 /// Enables different tunnelling strength per movement direction.
+	 /// Useful to reduce tunnelling when moving forward vs sideways.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Direction specific")
 	bool bDirectionSpecific;
 
-	/// Direction-specific tunnelling vertical strength
+	/// Strength multiplier for vertical (forward/backward) motion.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Direction specific")
 	float DirectionalVerticalStrength;
 
-	/// Direction-specific tunnelling horizontal strength
+	/// Strength multiplier for horizontal (sideways) motion.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Direction specific")
 	float DirectionalHorizontalStrength;
 
-	/// Enable effect for angular velocity
+	/* ================================
+	 * Angular Velocity (Turning)
+	 * ================================ */
+
+	 /// Enables tunnelling in response to rotation (turning).
+	 /// Important for smooth turning comfort.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity")
 	bool bUseAngularVelocity;
 
-	/// Angular effect strength
+	/// Strength of the angular velocity effect.
+	/// Higher values = tunnel closes faster when turning.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "10.0"))
 	float AngularStrength;
 
-	/// Minimum angular velocity
+	/// Minimum angular speed (degrees/sec) before tunnelling starts.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "180.0"))
 	float AngularMin;
 
-	/// Maximum angular velocity
+	/// Angular speed at which the effect reaches full strength.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "180.0"))
 	float AngularMax;
 
-	/// Angular smoothing
+	/// Smoothing factor for angular velocity.
+	/// Higher = slower response but less jitter.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Angular Velocity", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float AngularSmoothing;
 
-	/// Enable effect for velocity
+	/* ================================
+	 * Linear Velocity (Movement)
+	 * ================================ */
+
+	 /// Enables tunnelling in response to linear movement.
+	 /// Primary comfort control for smooth locomotion.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity")
 	bool bUseVelocity;
 
-	/// Velocity effect strength
+	/// Strength of the velocity-based effect.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "10.0"))
 	float VelocityStrength;
 
-	/// Minimum velocity
+	/// Minimum speed required before tunnelling starts.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
 	float VelocityMin;
 
-	/// Maximum velocity
+	/// Speed at which the effect reaches full strength.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
 	float VelocityMax;
 
-	/// Velocity smoothing
+	/// Smoothing factor for velocity changes.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Velocity", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float VelocitySmoothing;
 
-	/// Enable effect for acceleration
+	/* ================================
+	 * Acceleration (Sudden Changes)
+	 * ================================ */
+
+	 /// Enables tunnelling based on acceleration.
+	 /// Helps reduce discomfort during sudden starts/stops.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration")
 	bool bUseAcceleration;
 
-	/// Acceleration effect strength
+	/// Strength of the acceleration-based effect.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "10.0"))
 	float AccelerationStrength;
 
-	/// Minimum acceleration
+	/// Minimum acceleration required before effect activates.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
 	float AccelerationMin;
 
-	/// Maximum acceleration
+	/// Acceleration at which effect reaches full strength.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "1000.0"))
 	float AccelerationMax;
 
-	/// Acceleration smoothing
+	/// Smoothing factor for acceleration changes.
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Motion Settings|Acceleration", meta = (ClampMin = "0.0", ClampMax = "1.0"))
 	float AccelerationSmoothing;
+
+	/* ================================
+	 * Defaults
+	 * ================================ */
 
 	FVRTPPreset()
 	{
@@ -190,6 +246,7 @@ struct FVRTPPreset
 	}
 };
 
+
 /// Preset data asset definition
 UCLASS()
 class UVRTPPresetData : public UDataAsset
@@ -215,7 +272,9 @@ class UVRTunnellingPro : public UPrimitiveComponent
 
 public:
 	virtual void BeginPlay() override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 	void BeginDestroy() override;
+	void OnUnregister() override;
 
 	/// Which player index this motion controller should automatically follow
 	UPROPERTY(BlueprintReadWrite, BlueprintSetter = SetAssociatedPlayerIndex, Category = "VR Tunnelling | MotionController")
@@ -540,6 +599,8 @@ private:
 	void ApplyBackgroundMode();
 	void ApplyMaskMode();
 	void ApplyStencilMasks();
+	void ReleaseCaptureResources();
+	void ShutdownCaptureAndSkybox();
 
 	// View extension object that can persist on the render thread without the motion controller component
 	class FViewExtension : public FSceneViewExtensionBase
@@ -556,10 +617,12 @@ private:
 		virtual void PreRenderViewFamily_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneViewFamily& InViewFamily) override;
 		virtual void PostRenderViewFamily_RenderThread(FRHICommandListImmediate& RHICmdList, FSceneViewFamily& InViewFamily) override;
 		virtual int32 GetPriority() const override { return -10; }
-		virtual bool IsActiveThisFrame(class FViewport* InViewport) const;
 
 	private:
 		friend class UVRTunnellingPro;
+
+
+		
 
 		/** Motion controller component associated with this view extension */
 		UVRTunnellingPro* MotionControllerComponent;
