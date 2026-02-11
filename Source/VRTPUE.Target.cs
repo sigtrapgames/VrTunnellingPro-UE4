@@ -7,8 +7,9 @@ public class VRTPUETarget : TargetRules
 {
 	public VRTPUETarget(TargetInfo Target) : base(Target)
 	{
-		Type = TargetType.Game;
+        Type = TargetType.Game;
+        DefaultBuildSettings = BuildSettingsVersion.V5;
 
-		ExtraModuleNames.AddRange( new string[] { "VRTPUE" } );
+        ExtraModuleNames.AddRange( new string[] { "VRTPUE" } );
 	}
 }
