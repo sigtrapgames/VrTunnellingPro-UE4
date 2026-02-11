@@ -22,7 +22,20 @@ UVRTunnellingProMobile::UVRTunnellingProMobile()
 
 void UVRTunnellingProMobile::OnComponentDestroyed(bool bDestroyingHierarchy)
 {
+	ReleaseCaptureResources();
 	Super::OnComponentDestroyed(bDestroyingHierarchy);
+}
+
+void UVRTunnellingProMobile::BeginDestroy()
+{
+	ReleaseCaptureResources();
+	Super::BeginDestroy();
+}
+
+void UVRTunnellingProMobile::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+	ReleaseCaptureResources();
+	Super::EndPlay(EndPlayReason);
 }
 
 
@@ -238,7 +251,9 @@ void UVRTunnellingProMobile::InitCapture()
 	SceneCaptureCube->bCaptureOnMovement = false;
 	SceneCaptureCube->bCaptureEveryFrame = false;
 	SceneCaptureCube->bAutoActivate = true;
-	SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
+	SceneCaptureCube->bAlwaysPersistRenderingState = false;
+
+	//SceneCaptureCube->CaptureStereoPass = EStereoscopicPass::eSSP_FULL;
 
 	SceneCaptureCube->ShowFlags.SetAntiAliasing(false);
 	SceneCaptureCube->ShowFlags.SetAtmosphere(false);
@@ -462,6 +477,63 @@ void UVRTunnellingProMobile::ApplyStencilMasks()
 		}
 	}
 }
+
+void UVRTunnellingProMobile::ReleaseCaptureResources()
+{
+	if (!IsInGameThread())
+	{
+		AsyncTask(ENamedThreads::GameThread, [this]()
+			{
+				ReleaseCaptureResources();
+			});
+		return;
+	}
+
+	// Destroy spawned skybox actor first
+	if (Skybox)
+	{
+		Skybox->Destroy();
+		Skybox = nullptr;
+	}
+
+	// Destroy iris component if created
+	if (Iris)
+	{
+		Iris->Deactivate();
+		if (Iris->IsRegistered())
+		{
+			Iris->UnregisterComponent();
+		}
+		Iris->DestroyComponent();
+		Iris = nullptr;
+	}
+
+	// Tear down capture component (this is the important one)
+	if (SceneCaptureCube)
+	{
+		SceneCaptureCube->Deactivate();
+		SceneCaptureCube->TextureTarget = nullptr;
+
+		if (SceneCaptureCube->IsRegistered())
+		{
+			SceneCaptureCube->UnregisterComponent();
+		}
+
+		SceneCaptureCube->DestroyComponent();
+		SceneCaptureCube = nullptr;
+	}
+
+	// Release render target GPU resource explicitly
+	if (TC)
+	{
+		TC->ReleaseResource();
+		TC = nullptr;
+	}
+
+	// Critical in UE5: ensure render-thread releases happen before viewport teardown
+	FlushRenderingCommands();
+}
+
 
 void UVRTunnellingProMobile::ApplyColor(bool Enabled)
 {

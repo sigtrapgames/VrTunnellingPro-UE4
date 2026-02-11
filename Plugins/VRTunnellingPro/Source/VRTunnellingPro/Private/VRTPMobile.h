@@ -201,6 +201,8 @@ public:
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 #endif 
 	virtual void OnComponentDestroyed(bool bDestroyingHierarchy) override;
+	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
+	virtual void BeginDestroy() override;
 
 	/// Data Asset to use as preset
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "VR Tunnelling|Effect Preset")
@@ -442,4 +444,5 @@ private:
 	void ApplyBackgroundMode();
 	void ApplyMaskMode();
 	void ApplyStencilMasks();
+	void ReleaseCaptureResources();
 };
